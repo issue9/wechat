@@ -6,8 +6,15 @@ package result
 
 // 以下数据来自 http://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1433747234&token=&lang=zh_CN
 var messages = map[int]string{
-	-1:      "系统繁忙，此时请开发者稍候再试",
-	0:       "请求成功",
+	-1: "系统繁忙，此时请开发者稍候再试",
+	0:  "请求成功",
+
+	// NOTE: 以下代码不是微信指定的错误代码
+	// 400-600 之间表示 HTTP 错误
+	600: "json解析错误",
+	601: "不存在该错误代码",
+	// NOTE: 以上代码不是微信指定的错误代码
+
 	40001:   "获取access_token时AppSecret错误，或者access_token无效。请开发者认真比对AppSecret的正确性，或查看是否正在为恰当的公众号调用接口",
 	40002:   "不合法的凭证类型",
 	40003:   "不合法的OpenID，请开发者确认OpenID（该用户）是否已关注公众号，或是否是其他公众号的OpenID",
