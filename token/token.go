@@ -14,6 +14,18 @@ import (
 	"github.com/issue9/wechat/result"
 )
 
+// AccessToken 用于描述从 https://api.weixin.qq.com/cgi-bin/token 正常返回的数据结构。
+type AccessToken struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int64  `json:"expires_in"`
+	Created     int64  // 该 access_token 的获取时间
+}
+
+// IsExpired 该 access_token 是否还在有效期之内。
+func (at *AccessToken) IsExpired() bool {
+	return time.Now().Unix() > (at.Created + at.ExpiresIn)
+}
+
 // Refresh 获取 access_token 值。
 //
 // 用户最好自己实现一个处理 access_token 的中控服务器来集中处理 access_token 的获取与更新。
