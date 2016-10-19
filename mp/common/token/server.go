@@ -9,8 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/issue9/wechat/common/config"
-	"github.com/issue9/wechat/common/result"
+	"github.com/issue9/wechat/mp/common/config"
+	"github.com/issue9/wechat/mp/common/result"
 )
 
 // Server 表示中控服务器接口
@@ -32,7 +32,7 @@ type DefaultServer struct {
 	token  *AccessToken
 }
 
-// NewAccessTokenSever 声明一个默认的 access_token 中控服务器
+// NewDefaultServer 声明一个默认的 access_token 中控服务器
 //
 // 若将 errlog 指定为 nil，则会将错误信息输出到 stderr 中。
 func NewDefaultServer(conf *config.Config, errlog *log.Logger) (*DefaultServer, error) {

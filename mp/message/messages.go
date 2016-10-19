@@ -8,7 +8,7 @@ import (
 	"encoding/xml"
 	"io"
 
-	"github.com/issue9/wechat/common/result"
+	"github.com/issue9/wechat/mp/common/result"
 )
 
 // 消息类型

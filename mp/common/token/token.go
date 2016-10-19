@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/issue9/wechat/common/config"
-	"github.com/issue9/wechat/common/result"
+	"github.com/issue9/wechat/mp/common/config"
+	"github.com/issue9/wechat/mp/common/result"
 )
 
 // AccessToken 用于描述从 https://api.weixin.qq.com/cgi-bin/token 正常返回的数据结构。
