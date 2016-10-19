@@ -23,6 +23,9 @@ type Server interface {
 	// 中控服务器应该提供自动刷新机制。
 	// 此函数的存在，仅仅是为了在某些特定的情况下，手动刷 access_token 使用。
 	Refresh() (*AccessToken, error)
+
+	// 获取相关的配置项
+	Config() *config.Config
 }
 
 // DefaultServer 默认的 access_token 中控服务器
@@ -73,6 +76,11 @@ func (s *DefaultServer) Refresh() (*AccessToken, error) {
 	return token, nil
 }
 
+// Config 获取相关的配置对象
+func (s *DefaultServer) Config() *config.Config {
+	return s.conf
+}
+
 // 定时刷新
 func (s *DefaultServer) refresh() {
 	if _, err := s.Refresh(); err != nil {
@@ -83,4 +91,13 @@ func (s *DefaultServer) refresh() {
 	time.AfterFunc(time.Duration(s.token.ExpiresIn-600)*time.Second, func() {
 		s.refresh()
 	})
+}
+
+// URL 生成指定地址的 URL，会在查询参数中添中 access_token 的相关设置
+func URL(s Server, path string, queries map[string]string) string {
+	if queries == nil {
+		queries = make(map[string]string, 1)
+	}
+	queries["access_token"] = s.Token().AccessToken
+	return s.Config().URL(path, queries)
 }
