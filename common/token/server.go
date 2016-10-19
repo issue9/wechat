@@ -33,6 +33,8 @@ type DefaultServer struct {
 }
 
 // NewAccessTokenSever 声明一个默认的 access_token 中控服务器
+//
+// 若将 errlog 指定为 nil，则会将错误信息输出到 stderr 中。
 func NewDefaultServer(conf *config.Config, errlog *log.Logger) (*DefaultServer, error) {
 	if len(conf.AppID) == 0 {
 		return nil, result.New(40002)
