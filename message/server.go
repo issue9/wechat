@@ -15,9 +15,8 @@ import (
 
 // Handler 消息处理函数。
 //
-// 接收的参数为 message.go 中定义的某个结构体。
 // 而返回值则即为需要向请求源输出的字符串，一般为 reply.go 中的相关类型。
-type Handler func(interface{}) ([]byte, error)
+type Handler func(Messager) ([]byte, error)
 
 // Server 消息管理服务器。
 type Server struct {
@@ -85,7 +84,7 @@ func sign(token, timestamp, nonce string) string {
 }
 
 // TransferCustomerService 是一个默认的 Handler 实现，仅仅是实现了对消息的转发。
-func TransferCustomerService(m interface{}) ([]byte, error) {
+func TransferCustomerService(m Messager) ([]byte, error) {
 	obj := &ReplyTransferCustomerService{
 		MsgType: TypeTransferCustomerService,
 	}

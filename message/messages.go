@@ -16,6 +16,7 @@ const (
 	TypeText                    = "text"
 	TypeImage                   = "image"
 	TypeVoice                   = "voice"
+	TypeVideo                   = "video"
 	TypeShortVideo              = "shortvideo"
 	TypeLocation                = "location"
 	TypeLink                    = "link"
@@ -23,12 +24,10 @@ const (
 	TypeTransferCustomerService = "transfer_customer_service" // 只能用于回复消息中
 )
 
-type Typer interface {
+// Messager 表示消息的基本结构。
+type Messager interface {
+	// 获取消息的类型
 	Type() string
-}
-
-type Eventer interface {
-	Event() string
 }
 
 // MsgText 文本消息
@@ -41,6 +40,7 @@ type Text struct {
 	Content      string `xml:"Content,cdata"`      // 文本消息内容
 }
 
+// Image 图片消息
 type Image struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
@@ -51,6 +51,7 @@ type Image struct {
 	MediaID      string `xml:"MediaId,cdata"`
 }
 
+// Voice 语音消息
 type Voice struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
@@ -62,6 +63,7 @@ type Voice struct {
 	Recognition  string `xml:"Recognition,cdata,omitempty"` // 语音识别结果
 }
 
+// Video 视频消息
 type Video struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
@@ -72,6 +74,7 @@ type Video struct {
 	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
 }
 
+// shortVideo 短视频消息
 type ShortVideo struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
@@ -82,6 +85,7 @@ type ShortVideo struct {
 	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
 }
 
+// Location 位置消息
 type Location struct {
 	ToUserName   string  `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string  `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
@@ -94,6 +98,7 @@ type Location struct {
 	Label        string  `xml:"Label,cdata"` // 地理位置信息
 }
 
+// Link 链接消息
 type Link struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
@@ -103,6 +108,34 @@ type Link struct {
 	Title        string `xml:"Title,cdata"`
 	Description  string `xml:"Description,cdata"`
 	URL          string `xml:"Url,cdata"`
+}
+
+func (t *Text) Type() string {
+	return TypeText
+}
+
+func (i *Image) Type() string {
+	return TypeImage
+}
+
+func (v *Voice) Type() string {
+	return TypeVoice
+}
+
+func (v *Video) Type() string {
+	return TypeVideo
+}
+
+func (v *ShortVideo) Type() string {
+	return TypeShortVideo
+}
+
+func (l *Location) Type() string {
+	return TypeLocation
+}
+
+func (l *Link) Type() string {
+	return TypeLink
 }
 
 // msgType 这不是一个真实存在的消息类型，
@@ -121,7 +154,7 @@ func getMsgType(data []byte) (string, error) {
 	return obj.MsgType, nil
 }
 
-func getMsgObj(r io.Reader) (interface{}, error) {
+func getMsgObj(r io.Reader) (Messager, error) {
 	data := make([]byte, 0, 1000)
 	_, err := io.ReadFull(r, data)
 	if err != nil {
@@ -133,7 +166,7 @@ func getMsgObj(r io.Reader) (interface{}, error) {
 		return nil, err
 	}
 
-	var obj interface{}
+	var obj Messager
 	switch typ {
 	case TypeText:
 		obj = &Text{}

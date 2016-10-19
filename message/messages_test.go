@@ -10,6 +10,14 @@ import (
 	"github.com/issue9/assert"
 )
 
+var _ Messager = &Text{}
+var _ Messager = &Image{}
+var _ Messager = &Voice{}
+var _ Messager = &Video{}
+var _ Messager = &ShortVideo{}
+var _ Messager = &Location{}
+var _ Messager = &Link{}
+
 func TestGetMsgType(t *testing.T) {
 	a := assert.New(t)
 
