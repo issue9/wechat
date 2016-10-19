@@ -39,6 +39,14 @@ type Messager interface {
 	Created() int64
 }
 
+// Message 表示消息的基本结构，不包含事件
+type Message interface {
+	Messager
+
+	// 表示消息的 ID
+	ID() int64
+}
+
 // 所有消息的基本内容，包含事件
 type base struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
@@ -118,6 +126,10 @@ func (b *base) Created() int64 {
 
 func (b *base) Type() string {
 	return b.MsgType
+}
+
+func (m *message) ID() int64 {
+	return m.MsgID
 }
 
 // msgType 这不是一个真实存在的消息类型，

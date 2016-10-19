@@ -7,6 +7,7 @@ package message
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -85,9 +86,9 @@ func sign(token, timestamp, nonce string) string {
 
 // TransferCustomerService 是一个默认的 Handler 实现，仅仅是实现了对消息的转发。
 func TransferCustomerService(m Messager) ([]byte, error) {
-	obj := &ReplyTransferCustomerService{
-		MsgType: TypeTransferCustomerService,
+	if m.Type() == TypeEvent {
+		return nil, errors.New("事件不允许转发给客服")
 	}
 
-	return obj.Bytes()
+	return NewReplyTranferCustomerService(m).Bytes()
 }

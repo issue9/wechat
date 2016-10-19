@@ -4,6 +4,15 @@
 
 package message
 
+import "strings"
+
+const (
+	TemplateSendStatusSuccess int8 = 1
+	TemplateSendStatusUserBlock
+	TemplateSendStatusSystemFailed
+)
+
+// Eventer 事件接口
 type Eventer interface {
 	Messager
 	EventType() string
@@ -47,6 +56,27 @@ type EventClickView struct {
 	EventKey string `xml:"EventKey,cdata"`
 }
 
+// EventTemplateSendJobFinish 模板消息发送事件
+type EventTemplateSendJobFinish struct {
+	event
+	MsgID  int64  `xml:"MsgID"`
+	Status string `xml:"Status,cdata"`
+}
+
 func (e *event) EventType() string {
 	return e.Event
+}
+
+// StatusType 当前事例的状态
+func (e *EventTemplateSendJobFinish) StatusType() int8 {
+	switch {
+	case e.Status == "success":
+		return TemplateSendStatusSuccess
+	case strings.Index(e.Status, "user") >= 0:
+		return TemplateSendStatusUserBlock
+	case strings.Index(e.Status, "system") >= 0:
+		return TemplateSendStatusSystemFailed
+	}
+
+	return TemplateSendStatusSuccess
 }
