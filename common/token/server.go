@@ -9,7 +9,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/issue9/wechat/result"
+	"github.com/issue9/wechat/common/config"
+	"github.com/issue9/wechat/common/result"
 )
 
 // Server 表示中控服务器接口
@@ -24,22 +25,20 @@ type Server interface {
 	Refresh() (*AccessToken, error)
 }
 
-// 默认的 access_token 中控服务器
-type AccessTokenServer struct {
-	appid  string
-	secret string
+// DefaultServer 默认的 access_token 中控服务器
+type DefaultServer struct {
+	conf   *config.Config
 	errlog *log.Logger
-
-	token *AccessToken
+	token  *AccessToken
 }
 
 // NewAccessTokenSever 声明一个默认的 access_token 中控服务器
-func NewAccessTokenServer(appid, secret string, errlog *log.Logger) (*AccessTokenServer, error) {
-	if len(appid) == 0 {
+func NewDefaultServer(conf *config.Config, errlog *log.Logger) (*DefaultServer, error) {
+	if len(conf.AppID) == 0 {
 		return nil, result.New(40002)
 	}
 
-	if len(secret) == 0 {
+	if len(conf.AppSecret) == 0 {
 		return nil, result.New(41004)
 	}
 
@@ -47,9 +46,8 @@ func NewAccessTokenServer(appid, secret string, errlog *log.Logger) (*AccessToke
 		errlog = log.New(os.Stderr, "", log.Lshortfile|log.Ltime)
 	}
 
-	at := &AccessTokenServer{
-		appid:  appid,
-		secret: secret,
+	at := &DefaultServer{
+		conf:   conf,
 		errlog: errlog,
 	}
 	at.refresh()
@@ -58,13 +56,13 @@ func NewAccessTokenServer(appid, secret string, errlog *log.Logger) (*AccessToke
 }
 
 // Token 获取当前的 *AccessToken
-func (s *AccessTokenServer) Token() *AccessToken {
+func (s *DefaultServer) Token() *AccessToken {
 	return s.token
 }
 
 // Refresh 刷新 AccessToken，并获取新的 token
-func (s *AccessTokenServer) Refresh() (*AccessToken, error) {
-	token, err := Refresh(s.appid, s.secret)
+func (s *DefaultServer) Refresh() (*AccessToken, error) {
+	token, err := Refresh(s.conf)
 	if err != nil {
 		return nil, err
 	}
@@ -74,12 +72,12 @@ func (s *AccessTokenServer) Refresh() (*AccessToken, error) {
 }
 
 // 定时刷新
-func (s *AccessTokenServer) refresh() {
+func (s *DefaultServer) refresh() {
 	if _, err := s.Refresh(); err != nil {
 		s.errlog.Println(err)
 	}
 
-	// 提交10分钟刷
+	// 提前10分钟刷新
 	time.AfterFunc(time.Duration(s.token.ExpiresIn-600)*time.Second, func() {
 		s.refresh()
 	})

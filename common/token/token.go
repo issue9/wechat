@@ -11,7 +11,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/issue9/wechat/result"
+	"github.com/issue9/wechat/common/config"
+	"github.com/issue9/wechat/common/result"
 )
 
 // AccessToken 用于描述从 https://api.weixin.qq.com/cgi-bin/token 正常返回的数据结构。
@@ -29,16 +30,21 @@ func (at *AccessToken) IsExpired() bool {
 // Refresh 获取 access_token 值。
 //
 // 用户最好自己实现一个处理 access_token 的中控服务器来集中处理 access_token 的获取与更新。
-func Refresh(appid, secret string) (*AccessToken, error) {
-	if len(appid) == 0 {
+func Refresh(conf *config.Config) (*AccessToken, error) {
+	if len(conf.AppID) == 0 {
 		return nil, result.New(41002)
 	}
 
-	if len(secret) == 0 {
+	if len(conf.AppSecret) == 0 {
 		return nil, result.New(41004)
 	}
 
-	resp, err := http.Get("https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=" + appid + "&secret=" + secret)
+	queries := map[string]string{
+		"grant_type": "client_credential",
+		"appid":      conf.AppID,
+		"secret":     conf.AppSecret,
+	}
+	resp, err := http.Get(conf.URL("cgi-bin/token", queries))
 	if err != nil {
 		return nil, err
 	}
