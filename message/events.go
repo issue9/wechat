@@ -9,8 +9,8 @@ type Eventer interface {
 	EventType() string
 }
 
-type Event struct {
-	Message
+type event struct {
+	base
 	Event string `xml:"Event,cdata"` // 事件类型
 }
 
@@ -18,21 +18,21 @@ type Event struct {
 //
 // subscribe 表示关注，unsbuscribe 表示取消关注
 type EventSubscribe struct {
-	Event
+	event
 }
 
 // EventScan 表示通过扫描带参数的二维码事件
 //
 // subscribe 表示已关注下的扫描事件，SCAN 未关注下的扫描事件
 type EventScan struct {
-	Event
+	event
 	EventKey string `xml:"EventKey,cdata"`
 	Ticket   string `xml:"Ticket,cdata"`
 }
 
 // EventLocation 表示通过扫描带参数的二维码事件
 type EventLocation struct {
-	Event
+	event
 	Latitude  float64 `xml:"Latitude"`  // 纬度
 	Longitude float64 `xml:"Longitude"` // 经度
 	Precision float64 `xml:"Precision"` // 精度
@@ -43,10 +43,10 @@ type EventLocation struct {
 // 若是点击菜单，则 EventKey 表示菜单的 key，若
 // 点击的是链接，则 EventKey 表示的是要点击的链接。
 type EventClickView struct {
-	Event
+	event
 	EventKey string `xml:"EventKey,cdata"`
 }
 
-func (e *Event) EventType() string {
+func (e *event) EventType() string {
 	return e.Event
 }

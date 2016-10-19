@@ -24,7 +24,7 @@ const (
 	TypeTransferCustomerService = "transfer_customer_service" // 只能用于回复消息中
 )
 
-// Messager 表示消息的基本结构。
+// Messager 表示消息和事件的基本结构。
 type Messager interface {
 	// 消息类型，对应 MsgType 字段
 	Type() string
@@ -39,35 +39,35 @@ type Messager interface {
 	Created() int64
 }
 
-// Base 所有消息的基本内容，包含事件
-type Base struct {
+// 所有消息的基本内容，包含事件
+type base struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
 	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
 	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
 }
 
-type Message struct {
-	Base
+type message struct {
+	base
 	MsgID int64 `xml:"MsgId"` // 消息 id，64 位整型
 }
 
-// MsgText 文本消息
+// Text 文本消息
 type Text struct {
-	Message
+	message
 	Content string `xml:"Content,cdata"` // 文本消息内容
 }
 
 // Image 图片消息
 type Image struct {
-	Message
+	message
 	PicURL  string `xml:"PicUrl,cdata"`
 	MediaID string `xml:"MediaId,cdata"`
 }
 
 // Voice 语音消息
 type Voice struct {
-	Message
+	message
 	MediaID     string `xml:"MediaId,cdata"`
 	Format      string `xml:"Format,cdata"`
 	Recognition string `xml:"Recognition,cdata,omitempty"` // 语音识别结果
@@ -75,21 +75,21 @@ type Voice struct {
 
 // Video 视频消息
 type Video struct {
-	Message
+	message
 	MediaID      string `xml:"MediaId,cdata"`
 	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
 }
 
 // shortVideo 短视频消息
 type ShortVideo struct {
-	Message
+	message
 	MediaID      string `xml:"MediaId,cdata"`
 	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
 }
 
 // Location 位置消息
 type Location struct {
-	Message
+	message
 	X     float64 `xml:"Location_X"` // 维度
 	Y     float64 `xml:"Location_Y"` // 经度
 	Scale int     `xml:"Scale"`
@@ -98,25 +98,25 @@ type Location struct {
 
 // Link 链接消息
 type Link struct {
-	Message
+	message
 	Title       string `xml:"Title,cdata"`
 	Description string `xml:"Description,cdata"`
 	URL         string `xml:"Url,cdata"`
 }
 
-func (b *Base) To() string {
+func (b *base) To() string {
 	return b.ToUserName
 }
 
-func (b *Base) From() string {
+func (b *base) From() string {
 	return b.FromUserName
 }
 
-func (b *Base) Created() int64 {
+func (b *base) Created() int64 {
 	return b.CreateTime
 }
 
-func (b *Base) Type() string {
+func (b *base) Type() string {
 	return b.MsgType
 }
 
