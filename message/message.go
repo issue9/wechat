@@ -29,8 +29,8 @@ type Text struct {
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
 	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
 	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	Content      string `xml:"Content,cdata"`      // 文本消息内容
 	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	Content      string `xml:"Content,cdata"`      // 文本消息内容
 }
 
 type Image struct {
@@ -39,8 +39,62 @@ type Image struct {
 	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
 	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
 	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
-	PicUrl       string `xml:"PicUrl,cdata"`
+	PicURL       string `xml:"PicUrl,cdata"`
 	MediaID      string `xml:"MediaId,cdata"`
+}
+
+type Voice struct {
+	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
+	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
+	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
+	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	MediaID      string `xml:"MediaId,cdata"`
+	Format       string `xml:"Format,cdata"`
+	Recognition  string `xml:"Recognition,cdata,omitempty"` // 语音识别结果
+}
+
+type Video struct {
+	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
+	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
+	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
+	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	MediaID      string `xml:"MediaId,cdata"`
+	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
+}
+
+type ShortVideo struct {
+	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
+	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
+	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
+	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	MediaID      string `xml:"MediaId,cdata"`
+	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
+}
+
+type Location struct {
+	ToUserName   string  `xml:"ToUserName,cdata"`   // 开发者微信号
+	FromUserName string  `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64   `xml:"CreateTime"`         // 消息创建时间 （整型）
+	MsgType      string  `xml:"MsgType,cdata"`      // 消息类型
+	MsgID        int64   `xml:"MsgId"`              // 消息 id，64 位整型
+	X            float64 `xml:"Location_X"`         // 维度
+	Y            float64 `xml:"Location_Y"`         // 经度
+	Scale        int     `xml:"Scale"`
+	Label        string  `xml:"Label,cdata"` // 地理位置信息
+}
+
+type Link struct {
+	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
+	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
+	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
+	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	Title        string `xml:"Title,cdata"`
+	Description  string `xml:"Description,cdata"`
+	URL          string `xml:"Url,cdata"`
 }
 
 // msgType 这不是一个真实存在的消息类型，
