@@ -13,23 +13,23 @@ import (
 	"sort"
 )
 
-// MessageHandler 消息处理函数。
+// Handler 消息处理函数。
 //
 // 接收的参数为 message.go 中定义的某个结构体。
 // 而返回值则即为需要向请求源输出的字符串，一般为 reply.go 中的相关类型。
-type MessageHandler func(interface{}) ([]byte, error)
+type Handler func(interface{}) ([]byte, error)
 
 // Server 消息管理服务器。
 type Server struct {
 	token   string
-	handler MessageHandler
+	handler Handler
 	errlog  *log.Logger
 }
 
 // NewServer 声明一个新的消息管理服务器。
 //
 // 若将 errlog 指定为 nil，则会将错误信息输出到 stderr 中。
-func NewServer(token string, h MessageHandler, errlog *log.Logger) *Server {
+func NewServer(token string, h Handler, errlog *log.Logger) *Server {
 	if errlog == nil {
 		errlog = log.New(os.Stderr, "", log.Lshortfile|log.Ltime)
 	}
@@ -84,7 +84,7 @@ func sign(token, timestamp, nonce string) string {
 	return hex.EncodeToString(hash[:])
 }
 
-// TransferCustomerService 是一个默认的 MessageHandler 实现，仅仅是实现了对消息的转发。
+// TransferCustomerService 是一个默认的 Handler 实现，仅仅是实现了对消息的转发。
 func TransferCustomerService(m interface{}) ([]byte, error) {
 	obj := &ReplyTransferCustomerService{
 		MsgType: TypeTransferCustomerService,
