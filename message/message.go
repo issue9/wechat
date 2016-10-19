@@ -13,14 +13,14 @@ import (
 
 // 消息类型
 const (
-	MsgTypeText                    = "text"
-	MsgTypeImage                   = "image"
-	MsgTypeVoice                   = "voice"
-	MsgTypeShortVideo              = "shortvideo"
-	MsgTypeLocation                = "location"
-	MsgTypeLink                    = "link"
-	MsgTypeEvent                   = "event"
-	MsgTypeTransferCustomerService = "transfer_customer_service" // 只能用于回复消息中
+	TypeText                    = "text"
+	TypeImage                   = "image"
+	TypeVoice                   = "voice"
+	TypeShortVideo              = "shortvideo"
+	TypeLocation                = "location"
+	TypeLink                    = "link"
+	TypeEvent                   = "event"
+	TypeTransferCustomerService = "transfer_customer_service" // 只能用于回复消息中
 )
 
 type Messager interface {
@@ -31,7 +31,7 @@ type Messager interface {
 }
 
 // MsgText 文本消息
-type MsgText struct {
+type Text struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
 	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
@@ -40,7 +40,7 @@ type MsgText struct {
 	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
 }
 
-type MsgImage struct {
+type Image struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
 	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
 	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
@@ -56,37 +56,37 @@ type msgType struct {
 	MsgType string `xml:"MsgType"`
 }
 
-func (m *MsgText) To() string {
+func (m *Text) To() string {
 	return m.ToUserName
 }
 
-func (m *MsgText) From() string {
+func (m *Text) From() string {
 	return m.FromUserName
 }
 
-func (m *MsgText) Type() string {
+func (m *Text) Type() string {
 	// 不采用 m.MsgType，而是直接返回常量
-	return MsgTypeText
+	return TypeText
 }
 
-func (m *MsgText) Created() int64 {
+func (m *Text) Created() int64 {
 	return m.CreateTime
 }
 
-func (m *MsgImage) To() string {
+func (m *Image) To() string {
 	return m.ToUserName
 }
 
-func (m *MsgImage) From() string {
+func (m *Image) From() string {
 	return m.FromUserName
 }
 
-func (m *MsgImage) Type() string {
+func (m *Image) Type() string {
 	// 不采用 m.MsgType，而是直接返回常量
-	return MsgTypeImage
+	return TypeImage
 }
 
-func (m *MsgImage) Created() int64 {
+func (m *Image) Created() int64 {
 	return m.CreateTime
 }
 
@@ -114,11 +114,11 @@ func getMsgObj(r io.Reader) (Messager, error) {
 
 	var obj Messager
 	switch typ {
-	case MsgTypeText:
-		obj = &MsgText{}
+	case TypeText:
+		obj = &Text{}
 		err = xml.Unmarshal(data, obj)
-	case MsgTypeImage:
-		obj = &MsgImage{}
+	case TypeImage:
+		obj = &Image{}
 		err = xml.Unmarshal(data, obj)
 	}
 

@@ -23,7 +23,7 @@ func NewReplyTransferCustomerService(m Messager) *ReplyTransferCustomerService {
 		ToUserName:   m.From(),
 		FromUserName: m.To(),
 		CreateTime:   m.Created(),
-		MsgType:      MsgTypeTransferCustomerService,
+		MsgType:      TypeTransferCustomerService,
 	}
 }
 
