@@ -18,15 +18,6 @@ type ReplyTransferCustomerService struct {
 	MsgType      string `xml:"MsgType"`
 }
 
-func NewReplyTransferCustomerService(m Messager) *ReplyTransferCustomerService {
-	return &ReplyTransferCustomerService{
-		ToUserName:   m.From(),
-		FromUserName: m.To(),
-		CreateTime:   m.Created(),
-		MsgType:      TypeTransferCustomerService,
-	}
-}
-
 func (t *ReplyTransferCustomerService) Bytes() ([]byte, error) {
 	return xml.Marshal(t)
 }

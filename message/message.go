@@ -23,13 +23,6 @@ const (
 	TypeTransferCustomerService = "transfer_customer_service" // 只能用于回复消息中
 )
 
-type Messager interface {
-	To() string
-	From() string
-	Type() string
-	Created() int64
-}
-
 // MsgText 文本消息
 type Text struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
@@ -56,40 +49,6 @@ type msgType struct {
 	MsgType string `xml:"MsgType"`
 }
 
-func (m *Text) To() string {
-	return m.ToUserName
-}
-
-func (m *Text) From() string {
-	return m.FromUserName
-}
-
-func (m *Text) Type() string {
-	// 不采用 m.MsgType，而是直接返回常量
-	return TypeText
-}
-
-func (m *Text) Created() int64 {
-	return m.CreateTime
-}
-
-func (m *Image) To() string {
-	return m.ToUserName
-}
-
-func (m *Image) From() string {
-	return m.FromUserName
-}
-
-func (m *Image) Type() string {
-	// 不采用 m.MsgType，而是直接返回常量
-	return TypeImage
-}
-
-func (m *Image) Created() int64 {
-	return m.CreateTime
-}
-
 // 从指定的数据中分析其消息的类型
 func getMsgType(data []byte) (string, error) {
 	obj := &msgType{}
@@ -100,7 +59,7 @@ func getMsgType(data []byte) (string, error) {
 	return obj.MsgType, nil
 }
 
-func getMsgObj(r io.Reader) (Messager, error) {
+func getMsgObj(r io.Reader) (interface{}, error) {
 	data := make([]byte, 0, 1000)
 	_, err := io.ReadFull(r, data)
 	if err != nil {
@@ -112,17 +71,15 @@ func getMsgObj(r io.Reader) (Messager, error) {
 		return nil, err
 	}
 
-	var obj Messager
+	var obj interface{}
 	switch typ {
 	case TypeText:
 		obj = &Text{}
-		err = xml.Unmarshal(data, obj)
 	case TypeImage:
 		obj = &Image{}
-		err = xml.Unmarshal(data, obj)
 	}
 
-	if err != nil {
+	if err = xml.Unmarshal(data, obj); err != nil {
 		return nil, err
 	}
 	return obj, nil

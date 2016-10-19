@@ -15,9 +15,8 @@ import (
 
 // MessageHandler 消息处理函数。
 //
-// 参数为实现 MsgType 接口的相关类型。
 // 而返回值则即为需要向请求源输出的字符串，一般为 reply.go 中的相关类型。
-type MessageHandler func(Messager) ([]byte, error)
+type MessageHandler func(interface{}) ([]byte, error)
 
 // Server 消息管理服务器。
 type Server struct {
@@ -85,6 +84,18 @@ func sign(token, timestamp, nonce string) string {
 }
 
 // 这是一个默认的 MessageHandler 实现，仅仅是实现了对消息的转发。
-func TransferCustomerService(m Messager) ([]byte, error) {
-	return NewReplyTransferCustomerService(m).Bytes()
+func TransferCustomerService(m interface{}) ([]byte, error) {
+	obj := &ReplyTransferCustomerService{
+		MsgType: TypeTransferCustomerService,
+	}
+
+	switch inst := m.(type) {
+	case *Text:
+		obj.CreateTime = inst.CreateTime
+		obj.FromUserName = inst.ToUserName
+		obj.ToUserName = inst.FromUserName
+	case *Image:
+	}
+
+	return obj.Bytes()
 }

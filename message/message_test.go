@@ -10,8 +10,6 @@ import (
 	"github.com/issue9/assert"
 )
 
-var _ Messager = &Text{}
-
 func TestGetMsgType(t *testing.T) {
 	a := assert.New(t)
 
