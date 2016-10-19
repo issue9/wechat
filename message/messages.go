@@ -23,6 +23,14 @@ const (
 	TypeTransferCustomerService = "transfer_customer_service" // 只能用于回复消息中
 )
 
+type Typer interface {
+	Type() string
+}
+
+type Eventer interface {
+	Event() string
+}
+
 // MsgText 文本消息
 type Text struct {
 	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
