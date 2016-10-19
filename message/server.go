@@ -89,14 +89,5 @@ func TransferCustomerService(m Messager) ([]byte, error) {
 		MsgType: TypeTransferCustomerService,
 	}
 
-	switch inst := m.(type) {
-	case *Text:
-		obj.CreateTime = inst.CreateTime
-		obj.FromUserName = inst.ToUserName
-		obj.ToUserName = inst.FromUserName
-	case *Image:
-		// TODO
-	}
-
 	return obj.Bytes()
 }

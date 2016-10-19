@@ -26,116 +26,98 @@ const (
 
 // Messager 表示消息的基本结构。
 type Messager interface {
-	// 获取消息的类型
+	// 消息类型，对应 MsgType 字段
 	Type() string
+
+	// 开发者微信号，对应 ToUserName 字段
+	To() string
+
+	// 发送方账号，对应 FromUserName 字段
+	From() string
+
+	// 创建时间，对应 CreateTime 字段
+	Created() int64
+}
+
+// Base 所有消息的基本内容，包含事件
+type Base struct {
+	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
+	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
+	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
+}
+
+type Message struct {
+	Base
+	MsgID int64 `xml:"MsgId"` // 消息 id，64 位整型
 }
 
 // MsgText 文本消息
 type Text struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
-	Content      string `xml:"Content,cdata"`      // 文本消息内容
+	Message
+	Content string `xml:"Content,cdata"` // 文本消息内容
 }
 
 // Image 图片消息
 type Image struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
-	PicURL       string `xml:"PicUrl,cdata"`
-	MediaID      string `xml:"MediaId,cdata"`
+	Message
+	PicURL  string `xml:"PicUrl,cdata"`
+	MediaID string `xml:"MediaId,cdata"`
 }
 
 // Voice 语音消息
 type Voice struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
-	MediaID      string `xml:"MediaId,cdata"`
-	Format       string `xml:"Format,cdata"`
-	Recognition  string `xml:"Recognition,cdata,omitempty"` // 语音识别结果
+	Message
+	MediaID     string `xml:"MediaId,cdata"`
+	Format      string `xml:"Format,cdata"`
+	Recognition string `xml:"Recognition,cdata,omitempty"` // 语音识别结果
 }
 
 // Video 视频消息
 type Video struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	Message
 	MediaID      string `xml:"MediaId,cdata"`
 	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
 }
 
 // shortVideo 短视频消息
 type ShortVideo struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
+	Message
 	MediaID      string `xml:"MediaId,cdata"`
 	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
 }
 
 // Location 位置消息
 type Location struct {
-	ToUserName   string  `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string  `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64   `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string  `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64   `xml:"MsgId"`              // 消息 id，64 位整型
-	X            float64 `xml:"Location_X"`         // 维度
-	Y            float64 `xml:"Location_Y"`         // 经度
-	Scale        int     `xml:"Scale"`
-	Label        string  `xml:"Label,cdata"` // 地理位置信息
+	Message
+	X     float64 `xml:"Location_X"` // 维度
+	Y     float64 `xml:"Location_Y"` // 经度
+	Scale int     `xml:"Scale"`
+	Label string  `xml:"Label,cdata"` // 地理位置信息
 }
 
 // Link 链接消息
 type Link struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
-	MsgID        int64  `xml:"MsgId"`              // 消息 id，64 位整型
-	Title        string `xml:"Title,cdata"`
-	Description  string `xml:"Description,cdata"`
-	URL          string `xml:"Url,cdata"`
+	Message
+	Title       string `xml:"Title,cdata"`
+	Description string `xml:"Description,cdata"`
+	URL         string `xml:"Url,cdata"`
 }
 
-func (t *Text) Type() string {
-	return TypeText
+func (b *Base) To() string {
+	return b.ToUserName
 }
 
-func (i *Image) Type() string {
-	return TypeImage
+func (b *Base) From() string {
+	return b.FromUserName
 }
 
-func (v *Voice) Type() string {
-	return TypeVoice
+func (b *Base) Created() int64 {
+	return b.CreateTime
 }
 
-func (v *Video) Type() string {
-	return TypeVideo
-}
-
-func (v *ShortVideo) Type() string {
-	return TypeShortVideo
-}
-
-func (l *Location) Type() string {
-	return TypeLocation
-}
-
-func (l *Link) Type() string {
-	return TypeLink
+func (b *Base) Type() string {
+	return b.MsgType
 }
 
 // msgType 这不是一个真实存在的消息类型，
@@ -169,9 +151,9 @@ func getMsgObj(r io.Reader) (Messager, error) {
 	var obj Messager
 	switch typ {
 	case TypeText:
-		obj = &Text{}
+		//obj = &Text{}
 	case TypeImage:
-		obj = &Image{}
+		//obj = &Image{}
 	}
 
 	if err = xml.Unmarshal(data, obj); err != nil {
