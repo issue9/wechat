@@ -4,12 +4,7 @@
 
 package message
 
-import (
-	"encoding/xml"
-	"io"
-
-	"github.com/issue9/wechat/mp/common/result"
-)
+import "encoding/xml"
 
 // 消息类型
 const (
@@ -49,10 +44,10 @@ type Message interface {
 
 // 所有消息的基本内容，包含事件
 type base struct {
-	ToUserName   string `xml:"ToUserName,cdata"`   // 开发者微信号
-	FromUserName string `xml:"FromUserName,cdata"` // 发送方帐号（一个 OpenID）
-	CreateTime   int64  `xml:"CreateTime"`         // 消息创建时间 （整型）
-	MsgType      string `xml:"MsgType,cdata"`      // 消息类型
+	ToUserName   string `xml:"ToUserName"`   // 开发者微信号
+	FromUserName string `xml:"FromUserName"` // 发送方帐号（一个 OpenID）
+	CreateTime   int64  `xml:"CreateTime"`   // 消息创建时间 （整型）
+	MsgType      string `xml:"MsgType"`      // 消息类型
 }
 
 type message struct {
@@ -63,36 +58,36 @@ type message struct {
 // Text 文本消息
 type Text struct {
 	message
-	Content string `xml:"Content,cdata"` // 文本消息内容
+	Content string `xml:"Content"` // 文本消息内容
 }
 
 // Image 图片消息
 type Image struct {
 	message
-	PicURL  string `xml:"PicUrl,cdata"`
-	MediaID string `xml:"MediaId,cdata"`
+	PicURL  string `xml:"PicUrl"`
+	MediaID string `xml:"MediaId"`
 }
 
 // Voice 语音消息
 type Voice struct {
 	message
-	MediaID     string `xml:"MediaId,cdata"`
-	Format      string `xml:"Format,cdata"`
-	Recognition string `xml:"Recognition,cdata,omitempty"` // 语音识别结果
+	MediaID     string `xml:"MediaId"`
+	Format      string `xml:"Format"`
+	Recognition string `xml:"Recognition"` // 语音识别结果
 }
 
 // Video 视频消息
 type Video struct {
 	message
-	MediaID      string `xml:"MediaId,cdata"`
-	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
+	MediaID      string `xml:"MediaId"`
+	ThumbMediaID string `xml:"ThumbMediaId"`
 }
 
 // shortVideo 短视频消息
 type ShortVideo struct {
 	message
-	MediaID      string `xml:"MediaId,cdata"`
-	ThumbMediaID string `xml:"ThumbMediaId,cdata"`
+	MediaID      string `xml:"MediaId"`
+	ThumbMediaID string `xml:"ThumbMediaId"`
 }
 
 // Location 位置消息
@@ -101,15 +96,15 @@ type Location struct {
 	X     float64 `xml:"Location_X"` // 维度
 	Y     float64 `xml:"Location_Y"` // 经度
 	Scale int     `xml:"Scale"`
-	Label string  `xml:"Label,cdata"` // 地理位置信息
+	Label string  `xml:"Label"` // 地理位置信息
 }
 
 // Link 链接消息
 type Link struct {
 	message
-	Title       string `xml:"Title,cdata"`
-	Description string `xml:"Description,cdata"`
-	URL         string `xml:"Url,cdata"`
+	Title       string `xml:"Title"`
+	Description string `xml:"Description"`
+	URL         string `xml:"Url"`
 }
 
 func (b *base) To() string {
@@ -142,19 +137,14 @@ type msgType struct {
 func getMsgType(data []byte) (string, error) {
 	obj := &msgType{}
 	if err := xml.Unmarshal(data, obj); err != nil {
-		return "", result.New(600)
+		return "", err
 	}
 
 	return obj.MsgType, nil
 }
 
-func getMsgObj(r io.Reader) (Messager, error) {
-	data := make([]byte, 0, 1000)
-	_, err := io.ReadFull(r, data)
-	if err != nil {
-		return nil, err
-	}
-
+// 根据类型或事件，获取相应的初始化对象
+func getMessageObj(data []byte) (Messager, error) {
 	typ, err := getMsgType(data)
 	if err != nil {
 		return nil, err
@@ -163,12 +153,31 @@ func getMsgObj(r io.Reader) (Messager, error) {
 	var obj Messager
 	switch typ {
 	case TypeText:
-		//obj = &Text{}
+		obj = &Text{}
+		err = xml.Unmarshal(data, obj)
 	case TypeImage:
-		//obj = &Image{}
+		obj = &Image{}
+		err = xml.Unmarshal(data, obj)
+	case TypeVoice:
+		obj = &Voice{}
+		err = xml.Unmarshal(data, obj)
+	case TypeVideo:
+		obj = &Video{}
+		err = xml.Unmarshal(data, obj)
+	case TypeShortVideo:
+		obj = &ShortVideo{}
+		err = xml.Unmarshal(data, obj)
+	case TypeLocation:
+		obj = &Location{}
+		err = xml.Unmarshal(data, obj)
+	case TypeLink:
+		obj = &Link{}
+		err = xml.Unmarshal(data, obj)
+	case TypeEvent:
+		return getEventObj(data)
 	}
 
-	if err = xml.Unmarshal(data, obj); err != nil {
+	if err != nil {
 		return nil, err
 	}
 	return obj, nil

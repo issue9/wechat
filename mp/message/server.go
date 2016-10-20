@@ -8,6 +8,8 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -65,7 +67,7 @@ func (s *Server) Signature(w http.ResponseWriter, r *http.Request) {
 
 // Message 消息处理，POST 方法
 func (s *Server) Message(w http.ResponseWriter, r *http.Request) {
-	obj, err := getMsgObj(r.Body)
+	obj, err := getObj(r.Body)
 	if err != nil {
 		s.errlog.Println(err)
 		return
@@ -92,6 +94,15 @@ func sign(token, timestamp, nonce string) string {
 
 	hash := sha1.Sum(buf)
 	return hex.EncodeToString(hash[:])
+}
+
+func getObj(r io.Reader) (Messager, error) {
+	data, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return getMessageObj(data)
 }
 
 // TransferCustomerService 是一个默认的 Handler 实现，仅仅是实现了对消息的转发。
