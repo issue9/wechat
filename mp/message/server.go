@@ -7,7 +7,6 @@ package message
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,16 +14,6 @@ import (
 	"os"
 	"sort"
 )
-
-// Handler 消息处理函数。
-//通过向 NewServer 注册 Handler 函数，获取对消息处理的权限。
-//
-// 参数 Messager 为从微信端传递过来的 xml 数据对象实例，都已定义在 messages.go
-// 文件中。
-//
-// 函数的返回值，被当作消息被动回复内容传递给微信调用方。在 reply.go 中
-// 定义了大部分可能用到返回类型，可以拿来直接使用。
-type Handler func(Messager) ([]byte, error)
 
 // Server 消息管理服务器。
 type Server struct {
@@ -103,13 +92,4 @@ func getObj(r io.Reader) (Messager, error) {
 	}
 
 	return getMessageObj(data)
-}
-
-// TransferCustomerService 是一个默认的 Handler 实现，仅仅是实现了对消息的转发。
-func TransferCustomerService(m Messager) ([]byte, error) {
-	if m.Type() == TypeEvent {
-		return nil, errors.New("事件不允许转发给客服")
-	}
-
-	return NewReplyTranferCustomerService(m).Bytes()
 }
