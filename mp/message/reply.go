@@ -33,3 +33,5 @@ func NewReplyTranferCustomerService(m Messager) *ReplyTransferCustomerService {
 func (t *ReplyTransferCustomerService) Bytes() ([]byte, error) {
 	return xml.Marshal(t)
 }
+
+// TODO 其它的回复类型
