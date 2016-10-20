@@ -17,6 +17,8 @@ import (
 //
 // 函数的返回值，被当作消息被动回复内容传递给微信调用方。在 reply.go 中
 // 定义了大部分可能用到返回类型，可以拿来直接使用。
+//
+// NOTE 所有的 Handler 必须在 5 秒内有返回数据，否则微信端会再次发起同样的请求
 type Handler func(Messager) ([]byte, error)
 
 // HandlerBus 为 Handler 接口的管理器，方便用户按类别来注册消息处理。
@@ -30,6 +32,7 @@ type HandlerBus struct {
 	eventHandlers   map[string]Handler
 }
 
+// NewHandlerBus 声明一个新的 HandlerBus。
 func NewHandlerBus() *HandlerBus {
 	return &HandlerBus{
 		messageHandlers: make(map[string]Handler, 9),
@@ -37,10 +40,13 @@ func NewHandlerBus() *HandlerBus {
 	}
 }
 
+// RegisterMessage 注册消息处理函数。
+// typ 的值若为 event，可以注册，但不会实际有作用。
 func (b *HandlerBus) RegisterMessage(typ string, h Handler) {
 	b.messageHandlers[typ] = h
 }
 
+// RegisterEvent 注册事件处理函数
 func (b *HandlerBus) RegisterEvent(event string, h Handler) {
 	b.eventHandlers[event] = h
 }
