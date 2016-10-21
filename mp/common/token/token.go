@@ -31,14 +31,6 @@ func (at *AccessToken) IsExpired() bool {
 //
 // 用户最好自己实现一个处理 access_token 的中控服务器来集中处理 access_token 的获取与更新。
 func Refresh(conf *config.Config) (*AccessToken, error) {
-	if len(conf.AppID) == 0 {
-		return nil, result.New(41002)
-	}
-
-	if len(conf.AppSecret) == 0 {
-		return nil, result.New(41004)
-	}
-
 	queries := map[string]string{
 		"grant_type": "client_credential",
 		"appid":      conf.AppID,

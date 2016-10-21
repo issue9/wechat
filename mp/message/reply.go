@@ -14,6 +14,7 @@ var ReplySuccess = []byte("success")
 
 // ReplyTransferCustomerService 转发消息
 type ReplyTransferCustomerService struct {
+	XMLName      xml.Name     `xml:"xml"`
 	ToUserName   common.CData `xml:"ToUserName"`   // 开发者微信号
 	FromUserName common.CData `xml:"FromUserName"` // 发送方帐号（一个 OpenID）
 	MsgType      common.CData `xml:"MsgType"`      // 消息类型
@@ -25,7 +26,7 @@ func NewReplyTranferCustomerService(m Messager) *ReplyTransferCustomerService {
 	return &ReplyTransferCustomerService{
 		ToUserName:   common.CData{m.From()},
 		FromUserName: common.CData{m.To()},
-		MsgType:      common.CData{m.Type()},
+		MsgType:      common.CData{TypeTransferCustomerService},
 		CreateTime:   m.Created(),
 	}
 }

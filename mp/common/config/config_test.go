@@ -10,6 +10,13 @@ import (
 	"github.com/issue9/assert"
 )
 
+func TestNew(t *testing.T) {
+	a := assert.New(t)
+
+	conf, err := New("appid", "appsecret", "")
+	a.NotError(err).Equal(conf.Host, "api.weixin.qq.com")
+}
+
 func TestConfig_URL(t *testing.T) {
 	a := assert.New(t)
 
