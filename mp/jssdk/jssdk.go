@@ -16,15 +16,18 @@ import (
 	"github.com/issue9/wechat/mp/common/result"
 )
 
+// 授权作用域，供 GetCodeURL 使用。
 const (
 	SnsapiUserinfo = "snsapi_uesrnfo"
 	SnsapiBase     = "snsapi_base"
+
+	// 获取 code 的地址
+	codeURL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%v&redirect_uri=%vresponse_type=code&scope=%v&state=%v#wechat_redirect"
 )
 
 // GetCodeURL 获取 code
 func GetCodeURL(conf *config.Config, redirectURI, scope, state string) string {
-	url := "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%v&redirect_uri=%vresponse_tpe=code&scope=%v&state=%v#wechat_redirect"
-	return fmt.Sprintf(url, conf.AppID, redirectURI, scope, state)
+	return fmt.Sprintf(codeURL, conf.AppID, redirectURI, scope, state)
 }
 
 // GetAccessToken 根据 code 获取 access_token
@@ -65,13 +68,15 @@ func RefreshAccessToken(conf *config.Config, token *AccessToken) (*AccessToken, 
 }
 
 // GetUserInfo 获取用户基本信息
+//
+// 若不指定 lang 则使用 zh_CN 作为其默认值。
 func GetUserInfo(conf *config.Config, token *AccessToken, lang string) (*UserInfo, error) {
 	if len(lang) == 0 {
 		lang = "zh_CN"
 	}
 	queries := map[string]string{
 		"openid":       token.OpenID,
-		"access_token": token.AccessToken.AccessToken,
+		"access_token": token.AccessToken,
 		"lang":         lang,
 	}
 	url := conf.URL("sns/userinfo", queries)
@@ -106,7 +111,7 @@ func GetUserInfo(conf *config.Config, token *AccessToken, lang string) (*UserInf
 func AuthAccessToken(conf *config.Config, token *AccessToken) (bool, error) {
 	queries := map[string]string{
 		"openid":       token.OpenID,
-		"access_token": token.AccessToken.AccessToken,
+		"access_token": token.AccessToken,
 	}
 	url := conf.URL("sns/auth", queries)
 
@@ -136,7 +141,7 @@ func parseAccessToken(r io.Reader) (*AccessToken, error) {
 	if err := json.Unmarshal(data, token); err != nil {
 		return nil, err
 	}
-	if len(token.AccessToken.AccessToken) > 0 || token.ExpiresIn > 0 {
+	if len(token.AccessToken) > 0 || token.ExpiresIn > 0 {
 		token.Created = time.Now()
 		return token, nil
 	}

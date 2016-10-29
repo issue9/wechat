@@ -15,7 +15,7 @@ import (
 type Config struct {
 	AppID     string
 	AppSecret string
-	Host      string // 主机，不包含协议和端品
+	Host      string // 主机，不包含协议和端口
 }
 
 // New 声明一个 Config 实例。
@@ -45,7 +45,7 @@ func New(appid, appsecret, host string) (*Config, error) {
 	}, nil
 }
 
-// URL 生成调用 api 的地址
+// URL 生成调用 api 的地址。根据 c.Host 不同，生成不同的地址。
 func (c *Config) URL(urlpath string, queries map[string]string) string {
 	us := make(url.Values, len(queries))
 	for k, v := range queries {
