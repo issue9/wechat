@@ -18,8 +18,8 @@ import (
 // [40000,) 为微信的错误代码
 // NOTE: 当将 Result 当作一个 error 时，请确保 Result.IsOK() 为 false。
 type Result struct {
-	Code    int    `json:"errcode"`
-	Message string `json:"errmsg"`
+	Code    int    `json:"errcode,omitempty"`
+	Message string `json:"errmsg,omitempty"`
 }
 
 // New 声明一个 Result 实例

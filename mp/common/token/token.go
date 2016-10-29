@@ -5,8 +5,8 @@
 package token
 
 import (
-	"bytes"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -17,17 +17,17 @@ import (
 
 // AccessToken 用于描述从 https://api.weixin.qq.com/cgi-bin/token 正常返回的数据结构。
 type AccessToken struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int64  `json:"expires_in"`
-	Created     int64  // 该 access_token 的获取时间
+	AccessToken string        `json:"access_token"`
+	ExpiresIn   time.Duration `json:"expires_in"`
+	Created     time.Time     // 该 access_token 的获取时间
 }
 
 // IsExpired 该 access_token 是否还在有效期之内。
 func (at *AccessToken) IsExpired() bool {
-	return time.Now().Unix() > (at.Created + at.ExpiresIn)
+	return time.Now().After(at.Created.Add(at.ExpiresIn))
 }
 
-// Refresh 获取 access_token 值。
+// Refresh 刷新 access_token
 //
 // 用户最好自己实现一个处理 access_token 的中控服务器来集中处理 access_token 的获取与更新。
 func Refresh(conf *config.Config) (*AccessToken, error) {
@@ -49,14 +49,14 @@ func Refresh(conf *config.Config) (*AccessToken, error) {
 		}
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	return parseAccessToken(resp.Body)
+}
+
+// 将 r 中的数据分析到 AccessToken 中
+func parseAccessToken(r io.Reader) (*AccessToken, error) {
+	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, err
-	}
-
-	// 错误码
-	if bytes.Index(data, []byte("errcode")) > 0 {
-		return nil, result.From(data)
 	}
 
 	// access_token
@@ -64,6 +64,14 @@ func Refresh(conf *config.Config) (*AccessToken, error) {
 	if err := json.Unmarshal(data, at); err != nil {
 		return nil, err
 	}
-	at.Created = time.Now().Unix()
-	return at, nil
+	if len(at.AccessToken) > 0 { // 正常读取，必须有 access_token 字段
+		at.Created = time.Now()
+		return at, nil
+	}
+
+	rslt := &result.Result{}
+	if err := json.Unmarshal(data, rslt); err != nil {
+		return nil, err
+	}
+	return nil, rslt
 }
