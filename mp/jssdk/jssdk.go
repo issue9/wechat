@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/issue9/wechat/mp/common/config"
@@ -27,6 +28,7 @@ const (
 
 // GetCodeURL 获取 code
 func GetCodeURL(conf *config.Config, redirectURI, scope, state string) string {
+	redirectURI = url.QueryEscape(redirectURI)
 	return fmt.Sprintf(codeURL, conf.AppID, redirectURI, scope, state)
 }
 
