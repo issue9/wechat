@@ -14,12 +14,8 @@ type Result struct {
 	MsgID int64 `json:"msgid"`
 }
 
-type SendTemplate struct {
-	To   string         `json:"touser"`
-	ID   string         `json:"template_id"`
-	URL  string         `json:""url"`
-	Data map[string]*KV `json:"data"`
-}
+// Data 表示发送模板时的数据内容
+type Data map[string]KV
 
 type KV struct {
 	Value string `json:"value"`

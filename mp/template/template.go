@@ -15,8 +15,13 @@ import (
 )
 
 // Send 发送模板信息
-func Send(srv token.Server, to, id, url string, data map[string]*KV) error {
-	obj := &SendTemplate{
+func Send(srv token.Server, to, id, url string, data data) error {
+	obj := &struct {
+		To   string         `json:"touser"`
+		ID   string         `json:"template_id"`
+		URL  string         `json:""url"`
+		Data map[string]*KV `json:"data"`
+	}{
 		To:   to,
 		ID:   id,
 		URL:  url,
