@@ -23,7 +23,7 @@ const (
 	SnsapiBase     = "snsapi_base"
 
 	// 获取 code 的地址
-	codeURL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%v&redirect_uri=%vresponse_type=code&scope=%v&state=%v#wechat_redirect"
+	codeURL = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=%v&redirect_uri=%v&response_type=code&scope=%v&state=%v#wechat_redirect"
 )
 
 // GetCodeURL 获取 code
