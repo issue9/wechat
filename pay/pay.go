@@ -59,7 +59,7 @@ func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
 	}
 
 	if params["nonce_str"] == "" {
-		params["nonce_str"] = utils.NonceStr()
+		params["nonce_str"] = conf.NonceStr
 	}
 
 	if params["sign_type"] == "" {

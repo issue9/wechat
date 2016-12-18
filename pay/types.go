@@ -15,6 +15,7 @@ type Config struct {
 	AppID    string
 	APIKey   string
 	SignType string // 签名类型，可以是 MD5 或是 HMAC-SHA256
+	NonceStr string // 随机字符串
 }
 
 // Returner 用于描述从服务端返回的数据结构
