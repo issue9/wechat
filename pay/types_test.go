@@ -2,5 +2,8 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// Package pay 微信支付的相关接口
 package pay
+
+var _ Paramser = Params{}
+
+var _ Returner = Return{}
