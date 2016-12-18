@@ -6,7 +6,7 @@ package pay
 
 import (
 	"bytes"
-	"io"
+	"encoding/xml"
 	"net/http"
 
 	"github.com/issue9/wechat/pay/internal/utils"
@@ -36,7 +36,11 @@ func Post(conf *Config, url string, params Paramser, ret Returner) error {
 		return err
 	}
 
-	resp, err := http.Post(url, "application/xml", map2XML(conf, ps))
+	buf := new(bytes.Buffer)
+	if err = map2XML(conf, ps, buf); err != nil {
+		return err
+	}
+	resp, err := http.Post(url, "application/xml", buf)
 	if err != nil {
 		return err
 	}
@@ -45,7 +49,7 @@ func Post(conf *Config, url string, params Paramser, ret Returner) error {
 	return ret.From(resp.Body)
 }
 
-func map2XML(conf *Config, params map[string]string) io.Reader {
+func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
 	if params["appid"] == "" {
 		params["appid"] = conf.AppID
 	}
@@ -66,14 +70,19 @@ func map2XML(conf *Config, params map[string]string) io.Reader {
 		params["sign"] = utils.Sign(conf.APIKey, params)
 	}
 
-	buf := new(bytes.Buffer)
 	buf.WriteString("<xml>")
 	for k, v := range params {
+		if v == "" {
+			continue
+		}
+
 		buf.WriteByte('<')
 		buf.WriteString(k)
 		buf.WriteByte('>')
 
-		buf.WriteString(v)
+		if err := xml.EscapeText(buf, []byte(v)); err != nil {
+			return err
+		}
 
 		buf.WriteString("</")
 		buf.WriteString(k)
@@ -81,5 +90,5 @@ func map2XML(conf *Config, params map[string]string) io.Reader {
 	}
 	buf.WriteString("</xml>")
 
-	return buf
+	return nil
 }
