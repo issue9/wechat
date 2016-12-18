@@ -11,27 +11,7 @@ import (
 	"hash"
 	"sort"
 	"strings"
-	"time"
-
-	"github.com/issue9/rands"
 )
-
-var (
-	bs      = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	randSrv *rands.Rands
-)
-
-func init() {
-	randSrv, _ = rands.New(time.Now().Unix(), 100, 20, 21, bs)
-}
-
-// NonceStr 获取随机字符串
-func NonceStr() string {
-	if randSrv != nil {
-		return randSrv.String()
-	}
-	return rands.String(20, 21, bs)
-}
 
 // Sign 微信支付签名
 //
