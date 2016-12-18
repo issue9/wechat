@@ -9,7 +9,10 @@ import (
 	"testing"
 
 	"github.com/issue9/assert"
+	"github.com/issue9/wechat/pay"
 )
+
+var _ pay.Returner = &Return{}
 
 func TestParseReturn(t *testing.T) {
 	a := assert.New(t)
@@ -46,16 +49,16 @@ func TestReturn_IsOK(t *testing.T) {
 	ret := &Return{
 		Code: "123",
 	}
-	a.False(ret.IsOK())
+	a.False(ret.OK())
 
 	ret.Code = "success"
-	a.True(ret.IsOK())
+	a.True(ret.OK())
 
 	ret.Code = "SUCCESS"
-	a.True(ret.IsOK())
+	a.True(ret.OK())
 
 	ret.Code = "SuccesS"
-	a.True(ret.IsOK())
+	a.True(ret.OK())
 }
 
 func TestReturn_IsSuccess(t *testing.T) {
@@ -65,17 +68,17 @@ func TestReturn_IsSuccess(t *testing.T) {
 		Code:       "Success",
 		ResultCode: "123",
 	}
-	a.False(ret.IsSuccess())
+	a.False(ret.Success())
 
 	ret.ResultCode = "success"
-	a.True(ret.IsSuccess())
+	a.True(ret.Success())
 
 	ret.ResultCode = "SUCCESS"
-	a.True(ret.IsSuccess())
+	a.True(ret.Success())
 
 	ret.ResultCode = "SuccesS"
-	a.True(ret.IsSuccess())
+	a.True(ret.Success())
 
 	ret.Code = "123"
-	a.False(ret.IsSuccess())
+	a.False(ret.Success())
 }

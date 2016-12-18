@@ -3,3 +3,20 @@
 // license that can be found in the LICENSE file.
 
 package pay
+
+import (
+	"bytes"
+	"encoding/xml"
+	"testing"
+
+	"github.com/issue9/assert"
+)
+
+func TestEs(t *testing.T) {
+	a := assert.New(t)
+
+	v := []byte("<![CDATA[xxx]]>")
+	buf := new(bytes.Buffer)
+	a.NotError(xml.EscapeText(buf, v))
+	t.Log(buf.String())
+}

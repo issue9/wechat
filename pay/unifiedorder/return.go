@@ -4,11 +4,13 @@
 
 package unifiedorder
 
-import "strings"
+import (
+	"encoding/xml"
+	"io"
+	"io/ioutil"
+	"strings"
 
-const (
-	success = "SUCCESS"
-	fail    = "FAIL"
+	"github.com/issue9/wechat/pay"
 )
 
 // Return 表示统一下单功能的返回值类型。
@@ -32,12 +34,20 @@ type Return struct {
 	CodeURL   string `xml:"code_url"`
 }
 
-// IsOK 通信是否正常，即 Result.Code 是否为 SUCCESS
-func (r *Return) IsOK() bool {
-	return strings.ToUpper(r.Code) == success
+// OK 通信是否正常，即 Result.Code 是否为 SUCCESS
+func (r *Return) OK() bool {
+	return strings.ToUpper(r.Code) == pay.Success
 }
 
-// IsSuccess 交易是否正常，即 (Result.Code == SUCCESS) && (Result.ResultCode == SUCCESS)
-func (r *Return) IsSuccess() bool {
-	return r.IsOK() && strings.ToUpper(r.ResultCode) == success
+// Success 交易是否正常，即 (Result.Code == SUCCESS) && (Result.ResultCode == SUCCESS)
+func (r *Return) Success() bool {
+	return r.OK() && strings.ToUpper(r.ResultCode) == pay.Success
+}
+
+func (r *Return) From(buf io.Reader) error {
+	bs, err := ioutil.ReadAll(buf)
+	if err != nil {
+		return err
+	}
+	return xml.Unmarshal(bs, r)
 }
