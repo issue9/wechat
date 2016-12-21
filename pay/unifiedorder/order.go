@@ -12,7 +12,7 @@ import (
 	"github.com/issue9/wechat/pay"
 )
 
-const format = "20060102150405"
+const dateFormat = "20060102150405"
 
 // Order 表示一条完整的订单数据
 type Order struct {
@@ -79,9 +79,9 @@ func (o *Order) Params() (map[string]string, error) {
 
 	var start, end string
 	if !o.Start.IsZero() {
-		start = o.Start.Format(format)
+		start = o.Start.Format(dateFormat)
 		if o.ExpireIn > 0 {
-			end = o.Start.Add(o.ExpireIn).Format(format)
+			end = o.Start.Add(o.ExpireIn).Format(dateFormat)
 		}
 	}
 

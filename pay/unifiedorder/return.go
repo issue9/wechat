@@ -44,6 +44,7 @@ func (r *Return) Success() bool {
 	return r.OK() && strings.ToUpper(r.ResultCode) == pay.Success
 }
 
+// From 从 buf 中读取数据来初始化 r
 func (r *Return) From(buf io.Reader) error {
 	bs, err := ioutil.ReadAll(buf)
 	if err != nil {
