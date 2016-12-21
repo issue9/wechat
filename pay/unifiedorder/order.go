@@ -20,7 +20,7 @@ type Order struct {
 	SignType       string        // 签名类型
 	Body           string        // 商品描述
 	Attach         string        // 附加数据
-	TradeNO        string        // 商户订单号
+	OutTradeNO     string        // 商户订单号
 	FeeType        string        // 货币类型,CNY
 	TotalFee       int           // 总金额
 	SpbillCreateIP string        // 终端IP
@@ -59,7 +59,7 @@ func NewOrder(conf *pay.Config) *Order {
 // New 根据现在有的参数，生成一个新的订单内容。
 // 会尽量重用现在有的参数。
 func (o *Order) New() *Order {
-	o.TradeNO = ""
+	o.OutTradeNO = ""
 	o.TotalFee = 0
 	o.goods = o.goods[:0]
 	return nil
@@ -103,7 +103,7 @@ func (o *Order) Params() (map[string]string, error) {
 		"body":             o.Body,
 		"detail":           string(detail),
 		"attach":           o.Attach,
-		"out_trade_no":     o.TradeNO,
+		"out_trade_no":     o.OutTradeNO,
 		"fee_type":         o.FeeType,
 		"total_fee":        strconv.Itoa(o.TotalFee),
 		"spbill_create_ip": o.SpbillCreateIP,

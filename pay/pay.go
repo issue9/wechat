@@ -8,8 +8,6 @@ import (
 	"bytes"
 	"encoding/xml"
 	"net/http"
-
-	"github.com/issue9/wechat/pay/internal/utils"
 )
 
 // 返回状态的值
@@ -67,7 +65,7 @@ func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
 	}
 
 	if params["sign"] == "" {
-		params["sign"] = utils.Sign(conf.APIKey, params)
+		params["sign"] = sign(conf.APIKey, params)
 	}
 
 	buf.WriteString("<xml>")

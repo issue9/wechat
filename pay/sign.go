@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package utils
+package pay
 
 import (
 	"bytes"
@@ -13,12 +13,12 @@ import (
 	"strings"
 )
 
-// Sign 微信支付签名
+//  微信支付签名
 //
 // apikey 支付用的 apikey
 // params 签名用的参数
 // fn 签名的类型，为空则为 md5
-func Sign(apikey string, params map[string]string) string {
+func sign(apikey string, params map[string]string) string {
 	/* 排序 */
 	keys := make([]string, 0, len(params))
 	for k := range params {
