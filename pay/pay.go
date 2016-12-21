@@ -2,27 +2,18 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Package pay 微信支付的相关接口
 package pay
 
 import (
 	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/xml"
+	"hash"
 	"net/http"
-)
-
-// 返回状态的值
-const (
-	Success = "SUCCESS"
-	Fail    = "FAIL"
-)
-
-// 接口地址
-const (
-	UnifiedOrderURL = "https://api.mch.weixin.qq.com/pay/unifiedorder"
-	OrderQueryURL   = "https://api.mch.weixin.qq.com/pay/orderquery"
-	CloseOrderURL   = "https://api.mch.weixin.qq.com/pay/closeorder"
-	RefundURL       = "https://api.mch.weixin.qq.com/secapi/pay/refund"
-	RefundQueryURL  = "https://api.mch.weixin.qq.com/pay/refundquery"
+	"sort"
+	"strings"
 )
 
 // Post 发送请求，会优先使用 params 中的相关参数。
@@ -89,4 +80,49 @@ func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
 	buf.WriteString("</xml>")
 
 	return nil
+}
+
+// 微信支付签名
+//
+// apikey 支付用的 apikey
+// params 签名用的参数
+// fn 签名的类型，为空则为 md5
+func sign(apikey string, params map[string]string) string {
+	/* 排序 */
+	keys := make([]string, 0, len(params))
+	for k := range params {
+		if k == "sign" {
+			continue
+		}
+
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	/* 拼接字符串 */
+	buf := new(bytes.Buffer)
+	for _, k := range keys {
+		v := params[k]
+		if len(v) == 0 {
+			continue
+		}
+
+		buf.WriteString(k)
+		buf.WriteByte('=')
+		buf.WriteString(v)
+		buf.WriteByte('&')
+	}
+	buf.WriteString("key=")
+	buf.WriteString(apikey)
+
+	var h hash.Hash
+	switch params["sign_type"] {
+	case SignTypeMD5:
+		h = md5.New()
+	case SignTypeHmacSha256:
+		//h = hmac.New(sha256.New, []byte("123"))
+	}
+
+	h.Write(buf.Bytes())
+	return strings.ToUpper(hex.EncodeToString(h.Sum(nil)))
 }

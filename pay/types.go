@@ -9,13 +9,6 @@ import (
 	"io"
 )
 
-// 交易类型
-const (
-	TradeTypeJSAPI  = "JSAPI"
-	TradeTypeNative = "NATIVE"
-	TradeTypeApp    = "APP"
-)
-
 // Config 支付接口中的一些基本配置
 type Config struct {
 	MchID    string
