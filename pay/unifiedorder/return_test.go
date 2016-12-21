@@ -14,7 +14,7 @@ import (
 
 var _ pay.Returner = &Return{}
 
-func TestParseReturn(t *testing.T) {
+func TestReturn(t *testing.T) {
 	a := assert.New(t)
 
 	str := `<xml>

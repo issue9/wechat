@@ -38,6 +38,12 @@ const (
 	RefundSourceUnsettledFunds = "REFUND_SOURCE_UNSETTLED_FUNDS" // 未结算资金退款（默认使用未结算资金退款）
 )
 
+// 退款渠道
+const (
+	RefundChannelOriginal = "ORIGINAL" // 原路退款
+	RefundChannelBalance  = "BALANCE"  // 退回到余额
+)
+
 // 代金券类型
 const (
 	CouponTypeCash   = "CASH"    // 充值代金券

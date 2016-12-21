@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-package notify
+package refund
 
 import (
 	"encoding/xml"
@@ -11,62 +11,50 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/issue9/wechat/pay"
 )
 
-// Return 微信返回的信息结构
+// Return 退款的申请的返回值
 type Return struct {
-	Code               string `xml:"return_code"`          // 返回状态码
-	Message            string `xml:"return_msg"`           // 返回信息
-	AppID              string `xml:"appid"`                // 公众账号 ID 或是企业号 corpid
-	MchID              string `xml:"mch_id"`               // 商户号
-	DeviceInfo         string `xml:"device_info"`          // 设备号
-	NonceStr           string `xml:"nonce_str"`            // 随机字符串
-	Sign               string `xml:"sign"`                 // 签名
-	SignType           string `xml:"sign_type"`            // 签名类型
-	ResultCode         string `xml:"result_code"`          // 业务结果，SUCCESS/FAIL
-	ErrCode            string `xml:"err_code"`             // 错误代码
-	ErrCodeDesc        string `xml:"err_code_des"`         // 错误代码描述
-	OpenID             string `xml:"openid"`               // 用户标识
-	IsSubscribe        string `xml:"is_subscribe"`         // 是否关注公众账号，Y-关注，N-未关注
-	TradeType          string `xml:"trade_type"`           // 交易类型，JSAPI、NATIVE、APP
-	BankType           string `xml:"bank_type"`            // 付款银行
-	TotalFee           int    `xml:"total_fee"`            // 订单金额，单位为分
-	SettlementTotalFee int    `xml:"settlement_total_fee"` // 应结订单金额
-	FeeType            string `xml:"fee_type"`             // 货币种类，符合 ISO4217 标准的三位字母代码，默认：CNY
-	CashFee            int    `xml:"cash_fee"`             // 现金支付金额
-	CashFeeType        string `xml:"cash_fee_type"`        // 现金支付货币类型，符合 ISO4217 标准的三位字母代码
-	CouponFee          int    `xml:"coupon_fee"`           // 总代金券金额
-	CouponCount        int    `xml:"coupon_count"`         // 代金券使用数量
-	TransactionID      string `xml:"transaction_id"`       // 微信支付订单号
-	OutTradeNO         string `xml:"out_trade_no"`         // 商户订单号
-	Attach             string `xml:"attach"`               // 商家数据包
-	TimeEnd            string `xml:"time_end"`             // 支付完成时间，格式为yyyyMMddHHmmss
+	Code    string `xml:"return_code"`
+	Message string `xml:"return_msg"`
+
+	ResultCode          string `xml:"result_code"`           // 业务结果
+	ErrCode             string `xml:"err_code"`              // 错误代码
+	ErrCodeDesc         string `xml:"err_code_des"`          // 错误代码描述
+	AppID               string `xml:"appid"`                 // 公众账号ID
+	MchID               string `xml:"mch_id"`                // 商户号
+	DeviceInfo          string `xml:"device_info"`           // 设备号
+	NonceStr            string `xml:"nonce_str"`             // 随机字符串
+	Sign                string `xml:"sign"`                  // 签名
+	TransactionID       string `xml:"transaction_id"`        // 微信订单号
+	OutTradeNO          string `xml:"out_trade_no"`          // 商户订单号
+	OutRefundNO         string `xml:"out_refund_no"`         // 商户退款单号
+	RefundID            string `xml:"refund_id"`             // 微信退款单号
+	RefundChannel       string `xml:"refund_channel"`        // 退款渠道
+	RefundFee           int    `xml:"refund_fee"`            // 退款金额
+	SettlementRefundFee int    `xml:"settlement_refund_fee"` // 应结退款金额
+	TotalFee            int    `xml:"total_fee"`             // 订单总金额
+	SettlementTotalFee  int    `xml:"settlement_total_fee"`  // 应结订单金额
+	FeeType             string `xml:"fee_type"`              // 订单金额货币类型
+	CashFee             int    `xml:"cash_fee"`              // 现金支付金额
+	CashFeeType         string `xml:"cash_fee_type"`         // 现金支付币种
+	CashRefundFee       int    `xml:"cash_refund_fee"`       // 现金退款金额
+	CouponRefundFee     int    `xml:"coupon_refund_fee"`     // 代金券退款总金额
+	CouponRefundCount   int    `xml:"coupon_refund_count"`   // 退款代金券使用数量
 
 	Coupons []*pay.Coupon
-	end     time.Time
 }
 
-// End 返回 TimeEnd 的 time.Time 格式数据
-func (ret *Return) End() time.Time {
-	return ret.end
-}
-
-// Subscribed 当前用户是否已经关注公众账号
-func (ret *Return) Subscribed() bool {
-	return ret.IsSubscribe == "Y"
-}
-
-// OK pay.Retuner 接口
+// OK 通信是否正常，即 Result.Code 是否为 SUCCESS
 func (ret *Return) OK() bool {
-	return ret.Code == pay.Success
+	return strings.ToUpper(ret.Code) == pay.Success
 }
 
-// Success pay.Retuner 接口
+// Success 交易是否正常，即 (Result.Code == SUCCESS) && (Result.ResultCode == SUCCESS)
 func (ret *Return) Success() bool {
-	return ret.OK() && ret.ResultCode == pay.Success
+	return ret.OK() && strings.ToUpper(ret.ResultCode) == pay.Success
 }
 
 // From 从 r 中读取数据到 *Return 中。
@@ -167,16 +155,9 @@ func (ret *Return) From(r io.Reader) error {
 		} // ned switch
 	} // end for
 
-	if ret.CouponCount != len(ret.Coupons) {
-		return fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponCount, len(ret.Coupons))
+	if ret.CouponRefundCount != len(ret.Coupons) {
+		return fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponRefundCount, len(ret.Coupons))
 	}
-
-	// 转换时间值
-	end, err := time.Parse("20060102150405", ret.TimeEnd)
-	if err != nil {
-		return err
-	}
-	ret.end = end
 
 	return nil
 }
@@ -205,11 +186,4 @@ func getCouponIndex(name, prefix string) (int, error) {
 	}
 
 	return index, nil
-}
-
-// Read 从 r 读取内容，并尝试转换成 Return 实例
-func Read(r io.Reader) (*Return, error) {
-	ret := &Return{Coupons: []*pay.Coupon{}}
-	err := ret.From(r)
-	return ret, err
 }

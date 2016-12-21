@@ -44,3 +44,10 @@ func (r *Refund) Params() (map[string]string, error) {
 		"refund_account":  r.RefundAccount,
 	}, nil
 }
+
+// Do 执行退款操作
+func (r *Refund) Do() (*Return, error) {
+	ret := &Return{}
+	err := pay.Post(r.conf, pay.RefundURL, r, ret)
+	return ret, err
+}
