@@ -14,6 +14,8 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+
+	"github.com/issue9/rands"
 )
 
 // Post 发送请求，会优先使用 params 中的相关参数。
@@ -36,6 +38,13 @@ func Post(conf *Config, url string, params Paramser, ret Returner) error {
 	defer resp.Body.Close()
 
 	return ret.From(resp.Body)
+}
+
+var nonceStringChars = []byte("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+// NonceString 产生一段随机字符串
+func NonceString() string {
+	return rands.String(24, 31, nonceStringChars)
 }
 
 func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
