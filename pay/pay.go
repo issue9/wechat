@@ -10,6 +10,7 @@ import (
 	"crypto/x509"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -57,6 +58,9 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 	resp, err := p.client.Post(url, "application/xml", buf)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode > 399 {
+		return nil, fmt.Errorf("微信服务端返回[%v]状态码", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
@@ -126,6 +130,7 @@ func (p *Pay) ValidateAll(params map[string]string) error {
 	return nil
 }
 
+// 将 map 转换成 xml
 func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	if params["appid"] == "" {
 		params["appid"] = p.AppID
@@ -166,6 +171,7 @@ func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	return nil
 }
 
+// 从 io.Reader 读取内容，并写入到 map 中
 func mapFromReader(r io.Reader) (map[string]string, error) {
 	ret := make(map[string]string, 10)
 	d := xml.NewDecoder(r)

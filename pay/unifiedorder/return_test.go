@@ -9,10 +9,7 @@ import (
 	"testing"
 
 	"github.com/issue9/assert"
-	"github.com/issue9/wechat/pay"
 )
-
-var _ pay.Returner = &Return{}
 
 func TestReturn(t *testing.T) {
 	a := assert.New(t)
@@ -41,44 +38,4 @@ func TestReturn(t *testing.T) {
 		Equal(ret.Sign, "7921E432F65EB8ED0CE9755F0E86D72F").
 		Equal(ret.PrepayID, "wx201411101639507cbf6ffd8b0779950874").
 		Equal(ret.TradeType, "JSAPI")
-}
-
-func TestReturn_IsOK(t *testing.T) {
-	a := assert.New(t)
-
-	ret := &Return{
-		Code: "123",
-	}
-	a.False(ret.OK())
-
-	ret.Code = "success"
-	a.True(ret.OK())
-
-	ret.Code = "SUCCESS"
-	a.True(ret.OK())
-
-	ret.Code = "SuccesS"
-	a.True(ret.OK())
-}
-
-func TestReturn_IsSuccess(t *testing.T) {
-	a := assert.New(t)
-
-	ret := &Return{
-		Code:       "Success",
-		ResultCode: "123",
-	}
-	a.False(ret.Success())
-
-	ret.ResultCode = "success"
-	a.True(ret.Success())
-
-	ret.ResultCode = "SUCCESS"
-	a.True(ret.Success())
-
-	ret.ResultCode = "SuccesS"
-	a.True(ret.Success())
-
-	ret.Code = "123"
-	a.False(ret.Success())
 }

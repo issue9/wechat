@@ -33,7 +33,7 @@ type Order struct {
 	LimitPay       string        // 指定支付方式
 	OpenID         string        // 用户标识
 
-	conf  *pay.Config
+	p     *pay.Pay
 	goods []*Good
 }
 
@@ -49,9 +49,9 @@ type Good struct {
 }
 
 // NewOrder 声明一个新的 Order 实例
-func NewOrder(conf *pay.Config) *Order {
+func NewOrder(p *pay.Pay) *Order {
 	return &Order{
-		conf:  conf,
+		p:     p,
 		goods: []*Good{},
 	}
 }
@@ -70,8 +70,8 @@ func (o *Order) Goods(goods ...*Good) {
 	o.goods = append(o.goods, goods...)
 }
 
-// Params pay.Paramser 接口
-func (o *Order) Params() (map[string]string, error) {
+// 将当前实例转换成 map[string]string 格式
+func (o *Order) params() (map[string]string, error) {
 	detail, err := json.Marshal(o.goods)
 	if err != nil {
 		return nil, err
@@ -94,12 +94,10 @@ func (o *Order) Params() (map[string]string, error) {
 	}
 
 	return map[string]string{
-		"appid":            o.conf.AppID,
-		"mch_id":           o.conf.MchID,
 		"device_info":      o.DeviceInfo,
 		"nonce_str":        "", // 为空，由 pay.Post 自行计算
 		"sign":             "",
-		"sign_type":        o.conf.SignType,
+		"sign_type":        o.SignType,
 		"body":             o.Body,
 		"detail":           string(detail),
 		"attach":           o.Attach,
@@ -128,7 +126,18 @@ func (o *Order) Params() (map[string]string, error) {
 //  o.Body = "body"
 //  o.Pay()
 func (o *Order) Pay() (*Return, error) {
-	ret := &Return{}
-	err := pay.Post(o.conf, nil, pay.UnifiedOrderURL, o, ret)
-	return ret, err
+	params, err := o.params()
+	if err != nil {
+		return nil, err
+	}
+	m, err := o.p.Post(pay.UnifiedOrderURL, params)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = o.p.ValidateAll(m); err != nil {
+		return nil, err
+	}
+
+	return newReturn(m), nil
 }

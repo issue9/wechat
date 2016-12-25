@@ -4,6 +4,9 @@
 
 package pay
 
+type Returner struct {
+}
+
 // ReturnError 表示微信返回内容的错误信息
 type ReturnError struct {
 	Code    string // 错误代码，可能为空
