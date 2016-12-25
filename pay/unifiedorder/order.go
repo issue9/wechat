@@ -129,6 +129,6 @@ func (o *Order) Params() (map[string]string, error) {
 //  o.Pay()
 func (o *Order) Pay() (*Return, error) {
 	ret := &Return{}
-	err := pay.Post(o.conf, pay.UnifiedOrderURL, o, ret)
+	err := pay.Post(o.conf, nil, pay.UnifiedOrderURL, o, ret)
 	return ret, err
 }

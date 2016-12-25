@@ -8,9 +8,12 @@ package pay
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"encoding/xml"
 	"hash"
+	"io/ioutil"
 	"net/http"
 	"sort"
 	"strings"
@@ -18,10 +21,17 @@ import (
 	"github.com/issue9/rands"
 )
 
+// NonceString 函数可用的字符
+var nonceStringChars = []byte("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
 // Post 发送请求，会优先使用 params 中的相关参数。
 // 比如：若已经指定了 appid，会不会使用 conf.AppID；
 // 若使用了 sign，则不会再计算 sign 值。
-func Post(conf *Config, url string, params Paramser, ret Returner) error {
+func Post(conf *Config, client *http.Client, url string, params Paramser, ret Returner) error {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
 	ps, err := params.Params()
 	if err != nil {
 		return err
@@ -31,7 +41,7 @@ func Post(conf *Config, url string, params Paramser, ret Returner) error {
 	if err = map2XML(conf, ps, buf); err != nil {
 		return err
 	}
-	resp, err := http.Post(url, "application/xml", buf)
+	resp, err := client.Post(url, "application/xml", buf)
 	if err != nil {
 		return err
 	}
@@ -40,7 +50,30 @@ func Post(conf *Config, url string, params Paramser, ret Returner) error {
 	return ret.From(resp.Body)
 }
 
-var nonceStringChars = []byte("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+// TLSClient 获取一个带安全证书的 http.Client 实例
+func TLSClient(cert, key, root string) (*http.Client, error) {
+	c, err := tls.LoadX509KeyPair(cert, key)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := ioutil.ReadFile(root)
+	if err != nil {
+		return nil, err
+	}
+
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(r)
+
+	conf := &tls.Config{
+		Certificates: []tls.Certificate{c},
+		RootCAs:      pool,
+	}
+
+	return &http.Client{
+		Transport: &http.Transport{TLSClientConfig: conf},
+	}, nil
+}
 
 // NonceString 产生一段随机字符串
 func NonceString() string {
