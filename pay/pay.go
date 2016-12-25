@@ -16,10 +16,11 @@ import (
 	"net/http"
 )
 
+// 预定义的错误类型
 var (
-	ErrInvalidAppid = errors.New("appid 无效")
-	ErrInvalidMchid = errors.New("mchid 无效")
-	ErrInvalidSign  = errors.New("无效的签名")
+	ErrInvalidAppid = errors.New("返回的 appid 与当前的不匹配")
+	ErrInvalidMchid = errors.New("返回的 mch_id 与当前的不匹配")
+	ErrInvalidSign  = errors.New("不存在签名或是签名无法验证")
 )
 
 // Pay 支付的基本配置

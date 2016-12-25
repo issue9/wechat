@@ -5,6 +5,7 @@
 package notify
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io"
 	"reflect"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/issue9/wechat/pay"
-	"github.com/issue9/wechat/pay/internal"
 )
 
 // Return 微信返回的信息结构
@@ -49,14 +49,38 @@ func (ret *Return) Subscribed() bool {
 	return ret.IsSubscribe == "Y"
 }
 
-// From 从 r 中读取数据到 *Return 中。
-func newReturn(params map[string]string) (*Return, error) {
-	ret := &Return{}
-	if err := internal.Map2XMLObj(params, ret); err != nil {
+// Read 从 r 读取内容，并尝试转换成 Return 实例
+func Read(r io.Reader) (*Return, error) {
+	ret := &Return{Coupons: []*pay.Coupon{}}
+
+	d := xml.NewDecoder(r)
+	values, err := values(ret)
+	if err != nil {
 		return nil, err
 	}
 
-	for name, val := range params {
+	for token, err := d.Token(); true; token, err = d.Token() {
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		elem, ok := token.(xml.StartElement)
+		if !ok || elem.Name.Local == "xml" { // 忽略非 StartElement 和 xml 标签
+			continue
+		}
+		name := elem.Name.Local // xml 元素的名称
+
+		token, err = d.Token()
+		if err != nil { // 此处若 err == io.EOF，必须是格式错误，不用专门判断
+			return nil, err
+		}
+		bs, ok := token.(xml.CharData)
+		if !ok {
+			return nil, fmt.Errorf("无法转换成 xml.CharData")
+		}
+		val := string(bs) // xml 元素的值
 		switch {
 		case strings.HasPrefix(name, "coupon_id_"):
 			index, err := getCouponIndex(name, "coupon_id_")
@@ -66,7 +90,7 @@ func newReturn(params map[string]string) (*Return, error) {
 
 			id, err := strconv.Atoi(val)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if index >= len(ret.Coupons) { // 不存在
@@ -107,6 +131,21 @@ func newReturn(params map[string]string) (*Return, error) {
 				break
 			}
 			ret.Coupons[index].Fee = fee
+		default:
+			item, found := values[name]
+			if !found { // 不存在的字段
+				continue
+			}
+
+			if item.Kind() == reflect.String {
+				item.SetString(val)
+			} else if item.Kind() == reflect.Int {
+				i, err := strconv.ParseInt(val, 10, 32)
+				if err != nil {
+					return nil, err
+				}
+				item.SetInt(i)
+			}
 		} // ned switch
 	} // end for
 
@@ -151,8 +190,3 @@ func getCouponIndex(name, prefix string) (int, error) {
 }
 
 // Read 从 r 读取内容，并尝试转换成 Return 实例
-func Read(r io.Reader) (*Return, error) {
-	ret := &Return{Coupons: []*pay.Coupon{}}
-	err := ret.From(r)
-	return ret, err
-}
