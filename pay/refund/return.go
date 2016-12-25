@@ -6,8 +6,6 @@ package refund
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/issue9/wechat/pay"
 	"github.com/issue9/wechat/pay/internal"
@@ -41,75 +39,16 @@ func newReturn(params map[string]string) (*Return, error) {
 		return nil, err
 	}
 
-	for name, val := range params {
-		switch {
-		case strings.HasPrefix(name, "coupon_id_"):
-			index, err := getCouponIndex(name, "coupon_id_")
-			if err != nil {
-				return nil, err
-			}
-
-			id, err := strconv.Atoi(val)
-			if err != nil {
-				return nil, err
-			}
-
-			if index >= len(ret.Coupons) { // 不存在
-				ret.Coupons = append(ret.Coupons, &pay.Coupon{
-					ID: id,
-				})
-				break
-			}
-			ret.Coupons[index].ID = id
-		case strings.HasPrefix(name, "coupon_type_"):
-			index, err := getCouponIndex(name, "coupon_type_")
-			if err != nil {
-				return nil, err
-			}
-
-			if index >= len(ret.Coupons) { // 不存在
-				ret.Coupons = append(ret.Coupons, &pay.Coupon{
-					Type: val,
-				})
-				break
-			}
-			ret.Coupons[index].Type = val
-		case strings.HasPrefix(name, "coupon_fee_"):
-			index, err := getCouponIndex(name, "coupon_fee_")
-			if err != nil {
-				return nil, err
-			}
-
-			fee, err := strconv.Atoi(string(val))
-			if err != nil {
-				return nil, err
-			}
-
-			if index >= len(ret.Coupons) { // 不存在
-				ret.Coupons = append(ret.Coupons, &pay.Coupon{
-					Fee: fee,
-				})
-				break
-			}
-			ret.Coupons[index].Fee = fee
-		} // ned switch
-	} // end for
-
-	if ret.CouponRefundCount != len(ret.Coupons) {
-		return nil, fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponRefundCount, len(ret.Coupons))
+	coupons, err := pay.GetCoupon(params)
+	if err != nil {
+		return nil, err
 	}
+
+	if ret.CouponRefundCount != len(coupons) {
+		return nil, fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponRefundCount, len(coupons))
+	}
+
+	ret.Coupons = coupons
 
 	return ret, nil
-}
-
-// 获取代金券的索引值
-// 比如从 coupon_type_1 获取 1
-func getCouponIndex(name, prefix string) (int, error) {
-	str := strings.TrimPrefix(name, prefix)
-	index, err := strconv.Atoi(str)
-	if err != nil {
-		return 0, err
-	}
-
-	return index, nil
 }

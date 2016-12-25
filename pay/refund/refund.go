@@ -36,8 +36,6 @@ func New(p *pay.Pay) *Refund {
 func (r *Refund) params() (map[string]string, error) {
 	return map[string]string{
 		"device_info":     r.DeviceInfo,
-		"nonce_str":       "", // 为空，由 pay.Post 自行计算
-		"sign":            "",
 		"sign_type":       r.SignType,
 		"out_trade_no":    r.OutTradeNO,
 		"transaction_id":  r.TransactionID,

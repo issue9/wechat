@@ -95,8 +95,6 @@ func (o *UnifiedOrder) params() (map[string]string, error) {
 
 	return map[string]string{
 		"device_info":      o.DeviceInfo,
-		"nonce_str":        "", // 为空，由 pay.Post 自行计算
-		"sign":             "",
 		"sign_type":        o.SignType,
 		"body":             o.Body,
 		"detail":           string(detail),

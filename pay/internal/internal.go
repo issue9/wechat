@@ -5,9 +5,33 @@
 package internal
 
 import (
+	"encoding/xml"
+	"io"
 	"reflect"
 	"strconv"
 )
+
+// MapFromReader 从 io.Reader 读取内容，并填充到 map 中
+func MapFromReader(r io.Reader) (map[string]string, error) {
+	ret := make(map[string]string, 10)
+	d := xml.NewDecoder(r)
+	for token, err := d.Token(); true; token, err = d.Token() {
+		if err != nil {
+			return nil, err
+		}
+
+		var key, val string
+		switch t := token.(type) {
+		case xml.StartElement:
+			key = t.Name.Local
+		case xml.CharData:
+			val = string(t)
+		}
+		ret[key] = val
+	}
+
+	return ret, nil
+}
 
 // Map2XMLObj 将 map 转换到 v
 func Map2XMLObj(maps map[string]string, v interface{}) error {

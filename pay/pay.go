@@ -11,9 +11,10 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/issue9/wechat/pay/internal"
 )
 
 // 预定义的错误类型
@@ -71,7 +72,7 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 	}
 	defer resp.Body.Close()
 
-	return mapFromReader(resp.Body)
+	return internal.MapFromReader(resp.Body)
 }
 
 // UnifiedOrder 执行统一下单
@@ -142,7 +143,7 @@ func (p *Pay) ValidateSign(params map[string]string) error {
 		return ErrInvalidSign
 	}
 
-	if sign1 != Sign(p.APIKey, params) {
+	if sign1 != Sign(p.apiKey, params) {
 		return ErrInvalidSign
 	}
 
@@ -166,14 +167,14 @@ func (p *Pay) ValidateAll(params map[string]string) error {
 	return nil
 }
 
-// 将 map 转换成 xml
+// 将 map 转换成 xml，并写入到 buf
 func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	if params["appid"] == "" {
-		params["appid"] = p.AppID
+		params["appid"] = p.appID
 	}
 
 	if params["mch_id"] == "" {
-		params["mch_id"] = p.MchID
+		params["mch_id"] = p.mchID
 	}
 
 	if params["nonce_str"] == "" {
@@ -181,7 +182,7 @@ func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	}
 
 	if params["sign"] == "" {
-		params["sign"] = Sign(p.APIKey, params)
+		params["sign"] = Sign(p.apiKey, params)
 	}
 
 	buf.WriteString("<xml>")
@@ -230,26 +231,4 @@ func newTLSClient(cert, key, root string) (*http.Client, error) {
 	return &http.Client{
 		Transport: &http.Transport{TLSClientConfig: conf},
 	}, nil
-}
-
-// 从 io.Reader 读取内容，并填充到 map 中
-func mapFromReader(r io.Reader) (map[string]string, error) {
-	ret := make(map[string]string, 10)
-	d := xml.NewDecoder(r)
-	for token, err := d.Token(); true; token, err = d.Token() {
-		if err != nil {
-			return nil, err
-		}
-
-		var key, val string
-		switch t := token.(type) {
-		case xml.StartElement:
-			key = t.Name.Local
-		case xml.CharData:
-			val = string(t)
-		}
-		ret[key] = val
-	}
-
-	return ret, nil
 }

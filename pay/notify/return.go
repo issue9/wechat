@@ -5,15 +5,12 @@
 package notify
 
 import (
-	"encoding/xml"
 	"fmt"
 	"io"
-	"reflect"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/issue9/wechat/pay"
+	"github.com/issue9/wechat/pay/internal"
 )
 
 // Return 微信返回的信息结构
@@ -51,107 +48,25 @@ func (ret *Return) Subscribed() bool {
 
 // Read 从 r 读取内容，并尝试转换成 Return 实例
 func Read(r io.Reader) (*Return, error) {
-	ret := &Return{Coupons: []*pay.Coupon{}}
-
-	d := xml.NewDecoder(r)
-	values, err := values(ret)
+	params, err := internal.MapFromReader(r)
+	if err != nil {
+		return nil, err
+	}
+	ret := &Return{}
+	err = internal.Map2XMLObj(params, ret)
 	if err != nil {
 		return nil, err
 	}
 
-	for token, err := d.Token(); true; token, err = d.Token() {
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return nil, err
-		}
-
-		elem, ok := token.(xml.StartElement)
-		if !ok || elem.Name.Local == "xml" { // 忽略非 StartElement 和 xml 标签
-			continue
-		}
-		name := elem.Name.Local // xml 元素的名称
-
-		token, err = d.Token()
-		if err != nil { // 此处若 err == io.EOF，必须是格式错误，不用专门判断
-			return nil, err
-		}
-		bs, ok := token.(xml.CharData)
-		if !ok {
-			return nil, fmt.Errorf("无法转换成 xml.CharData")
-		}
-		val := string(bs) // xml 元素的值
-		switch {
-		case strings.HasPrefix(name, "coupon_id_"):
-			index, err := getCouponIndex(name, "coupon_id_")
-			if err != nil {
-				return nil, err
-			}
-
-			id, err := strconv.Atoi(val)
-			if err != nil {
-				return nil, err
-			}
-
-			if index >= len(ret.Coupons) { // 不存在
-				ret.Coupons = append(ret.Coupons, &pay.Coupon{
-					ID: id,
-				})
-				break
-			}
-			ret.Coupons[index].ID = id
-		case strings.HasPrefix(name, "coupon_type_"):
-			index, err := getCouponIndex(name, "coupon_type_")
-			if err != nil {
-				return nil, err
-			}
-
-			if index >= len(ret.Coupons) { // 不存在
-				ret.Coupons = append(ret.Coupons, &pay.Coupon{
-					Type: val,
-				})
-				break
-			}
-			ret.Coupons[index].Type = val
-		case strings.HasPrefix(name, "coupon_fee_"):
-			index, err := getCouponIndex(name, "coupon_fee_")
-			if err != nil {
-				return nil, err
-			}
-
-			fee, err := strconv.Atoi(string(val))
-			if err != nil {
-				return nil, err
-			}
-
-			if index >= len(ret.Coupons) { // 不存在
-				ret.Coupons = append(ret.Coupons, &pay.Coupon{
-					Fee: fee,
-				})
-				break
-			}
-			ret.Coupons[index].Fee = fee
-		default:
-			item, found := values[name]
-			if !found { // 不存在的字段
-				continue
-			}
-
-			if item.Kind() == reflect.String {
-				item.SetString(val)
-			} else if item.Kind() == reflect.Int {
-				i, err := strconv.ParseInt(val, 10, 32)
-				if err != nil {
-					return nil, err
-				}
-				item.SetInt(i)
-			}
-		} // ned switch
-	} // end for
+	coupons, err := pay.GetCoupons(params)
+	if err != nil {
+		return nil, err
+	}
 
 	if ret.CouponCount != len(ret.Coupons) {
 		return nil, fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponCount, len(ret.Coupons))
 	}
+	ret.Coupons = coupons
 
 	// 转换时间值
 	end, err := time.Parse("20060102150405", ret.TimeEnd)
@@ -162,31 +77,3 @@ func Read(r io.Reader) (*Return, error) {
 
 	return ret, nil
 }
-
-// 将 Return 各个字段以 xml 标签中的值进行索引，方便查找。
-func values(ret *Return) (map[string]reflect.Value, error) {
-	v := reflect.ValueOf(ret).Elem()
-	t := v.Type()
-	values := make(map[string]reflect.Value, v.NumField())
-
-	for i := 0; i < v.NumField(); i++ {
-		tag := t.Field(i).Tag.Get("xml")
-		values[tag] = v.Field(i)
-	}
-
-	return values, nil
-}
-
-// 获取代金券的索引值
-// 比如从 coupon_type_1 获取 1
-func getCouponIndex(name, prefix string) (int, error) {
-	str := strings.TrimPrefix(name, prefix)
-	index, err := strconv.Atoi(str)
-	if err != nil {
-		return 0, err
-	}
-
-	return index, nil
-}
-
-// Read 从 r 读取内容，并尝试转换成 Return 实例
