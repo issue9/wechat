@@ -4,16 +4,6 @@
 
 package pay
 
-// ReturnError 表示微信返回内容的错误信息
-type ReturnError struct {
-	Code    string // 错误代码，可能为空
-	Message string
-}
-
-func (e *ReturnError) Error() string {
-	return e.Message
-}
-
 // Coupon 代金券
 type Coupon struct {
 	ID   int    // 代金券ID

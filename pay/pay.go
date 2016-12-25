@@ -16,11 +16,17 @@ import (
 	"net/http"
 )
 
+var (
+	ErrInvalidAppid = errors.New("appid 无效")
+	ErrInvalidMchid = errors.New("mchid 无效")
+	ErrInvalidSign  = errors.New("无效的签名")
+)
+
 // Pay 支付的基本配置
 type Pay struct {
-	MchID  string
-	AppID  string
-	APIKey string
+	mchID  string
+	appID  string
+	apiKey string
 	client *http.Client
 }
 
@@ -30,9 +36,9 @@ func New(mchid, appid, apikey string, client *http.Client) *Pay {
 		client = http.DefaultClient
 	}
 	return &Pay{
-		MchID:  mchid,
-		AppID:  appid,
-		APIKey: apikey,
+		mchID:  mchid,
+		appID:  appid,
+		apiKey: apikey,
 		client: client,
 	}
 }
@@ -105,10 +111,7 @@ func (p *Pay) Report(params map[string]string) (map[string]string, error) {
 // ValidateReturn 仅验证 return_code
 func (p *Pay) ValidateReturn(params map[string]string) error {
 	if params["return_code"] != Success {
-		return &ReturnError{
-			Code:    params["return_code"],
-			Message: params["return_msg"],
-		}
+		return errors.New(params["return_msg"])
 	}
 
 	return nil
@@ -121,10 +124,7 @@ func (p *Pay) ValidateResult(params map[string]string) error {
 	}
 
 	if params["result_code"] != Success {
-		return &ReturnError{
-			Code:    params["err_code"],
-			Message: params["err_code_des"],
-		}
+		return errors.New(params["err_code"] + "-" + params["err_code_des"])
 	}
 
 	return nil
@@ -138,11 +138,11 @@ func (p *Pay) ValidateSign(params map[string]string) error {
 
 	sign1 := params["sign"]
 	if sign1 == "" {
-		return errors.New("不存在 sign 字段")
+		return ErrInvalidSign
 	}
 
 	if sign1 != Sign(p.APIKey, params) {
-		return errors.New("签名验证无法通过")
+		return ErrInvalidSign
 	}
 
 	return nil
@@ -154,12 +154,12 @@ func (p *Pay) ValidateAll(params map[string]string) error {
 		return err
 	}
 
-	if params["mch_id"] != p.MchID {
-		return errors.New("mch_id 不匹配")
+	if params["mch_id"] != p.mchID {
+		return ErrInvalidMchid
 	}
 
-	if params["appid"] != p.AppID {
-		return errors.New("appid 不匹配")
+	if params["appid"] != p.appID {
+		return ErrInvalidAppid
 	}
 
 	return nil
