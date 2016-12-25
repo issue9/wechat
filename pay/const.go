@@ -17,6 +17,8 @@ const (
 	CloseOrderURL   = "https://api.mch.weixin.qq.com/pay/closeorder"
 	RefundURL       = "https://api.mch.weixin.qq.com/secapi/pay/refund"
 	RefundQueryURL  = "https://api.mch.weixin.qq.com/pay/refundquery"
+	DownloadBillURL = "https://api.mch.weixin.qq.com/pay/downloadbill"
+	ReportURL       = "https://api.mch.weixin.qq.com/payitil/report"
 )
 
 // 交易类型

@@ -14,8 +14,8 @@ import (
 
 const dateFormat = "20060102150405"
 
-// Order 表示一条完整的订单数据
-type Order struct {
+// UnifiedOrder 表示一条完整的订单数据
+type UnifiedOrder struct {
 	DeviceInfo     string        // 设备号
 	SignType       string        // 签名类型
 	Body           string        // 商品描述
@@ -48,9 +48,9 @@ type Good struct {
 	Body         string `json:"body,omitempty"`
 }
 
-// NewOrder 声明一个新的 Order 实例
-func NewOrder(p *pay.Pay) *Order {
-	return &Order{
+// New 声明一个新的 UnifiedOrder 实例
+func New(p *pay.Pay) *UnifiedOrder {
+	return &UnifiedOrder{
 		p:     p,
 		goods: []*Good{},
 	}
@@ -58,7 +58,7 @@ func NewOrder(p *pay.Pay) *Order {
 
 // New 根据现在有的参数，生成一个新的订单内容。
 // 会尽量重用现在有的参数。
-func (o *Order) New() *Order {
+func (o *UnifiedOrder) New() *UnifiedOrder {
 	o.OutTradeNO = ""
 	o.TotalFee = 0
 	o.goods = o.goods[:0]
@@ -66,12 +66,12 @@ func (o *Order) New() *Order {
 }
 
 // Goods 为当前订单添加一条订的物品记录
-func (o *Order) Goods(goods ...*Good) {
+func (o *UnifiedOrder) Goods(goods ...*Good) {
 	o.goods = append(o.goods, goods...)
 }
 
 // 将当前实例转换成 map[string]string 格式
-func (o *Order) params() (map[string]string, error) {
+func (o *UnifiedOrder) params() (map[string]string, error) {
 	detail, err := json.Marshal(o.goods)
 	if err != nil {
 		return nil, err
@@ -119,18 +119,18 @@ func (o *Order) params() (map[string]string, error) {
 // Pay 下单
 //
 // Example:
-//  o := NewOrder(mch)
+//  o := New(mch)
 //  o.Pay()
 //
 //  o = o.New() // 新的参数 o，会重用大部分 o 中的数据。
 //  o.Body = "body"
 //  o.Pay()
-func (o *Order) Pay() (*Return, error) {
+func (o *UnifiedOrder) Pay() (*Return, error) {
 	params, err := o.params()
 	if err != nil {
 		return nil, err
 	}
-	m, err := o.p.Post(pay.UnifiedOrderURL, params)
+	m, err := o.p.UnifiedOrder(params)
 	if err != nil {
 		return nil, err
 	}

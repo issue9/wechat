@@ -48,7 +48,7 @@ func NewTLSPay(mchid, appid, apikey, certPath, keyPath, rootCAPath string) (*Pay
 }
 
 // Post 发送请求，会优先使用 params 中的相关参数。
-// 比如：若已经指定了 appid，会不会使用 conf.AppID；
+// 比如：若已经指定了 appid，会不会使用 pay.AppID；
 // 若使用了 sign，则不会再计算 sign 值。
 func (p *Pay) Post(url string, params map[string]string) (map[string]string, error) {
 	buf := new(bytes.Buffer)
@@ -65,6 +65,41 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 	defer resp.Body.Close()
 
 	return mapFromReader(resp.Body)
+}
+
+// UnifiedOrder 执行统一下单
+func (p *Pay) UnifiedOrder(params map[string]string) (map[string]string, error) {
+	return p.Post(UnifiedOrderURL, params)
+}
+
+// OrderQueryURL 订单查询
+func (p *Pay) OrderQueryURL(params map[string]string) (map[string]string, error) {
+	return p.Post(OrderQueryURL, params)
+}
+
+// CloseOrder 关闭订单
+func (p *Pay) CloseOrder(params map[string]string) (map[string]string, error) {
+	return p.Post(CloseOrderURL, params)
+}
+
+// Refund 退款
+func (p *Pay) Refund(params map[string]string) (map[string]string, error) {
+	return p.Post(RefundURL, params)
+}
+
+// RefundQuery 退款查询
+func (p *Pay) RefundQuery(params map[string]string) (map[string]string, error) {
+	return p.Post(RefundQueryURL, params)
+}
+
+// DownloadBill 下载对账单
+func (p *Pay) DownloadBill(params map[string]string) (map[string]string, error) {
+	return p.Post(DownloadBillURL, params)
+}
+
+// Report 主动上报接口
+func (p *Pay) Report(params map[string]string) (map[string]string, error) {
+	return p.Post(ReportURL, params)
 }
 
 // ValidateReturn 仅验证 return_code
@@ -171,28 +206,6 @@ func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	return nil
 }
 
-// 从 io.Reader 读取内容，并写入到 map 中
-func mapFromReader(r io.Reader) (map[string]string, error) {
-	ret := make(map[string]string, 10)
-	d := xml.NewDecoder(r)
-	for token, err := d.Token(); true; token, err = d.Token() {
-		if err != nil {
-			return nil, err
-		}
-
-		var key, val string
-		switch t := token.(type) {
-		case xml.StartElement:
-			key = t.Name.Local
-		case xml.CharData:
-			val = string(t)
-		}
-		ret[key] = val
-	}
-
-	return ret, nil
-}
-
 // 获取一个带安全证书的 http.Client 实例
 func newTLSClient(cert, key, root string) (*http.Client, error) {
 	c, err := tls.LoadX509KeyPair(cert, key)
@@ -216,4 +229,26 @@ func newTLSClient(cert, key, root string) (*http.Client, error) {
 	return &http.Client{
 		Transport: &http.Transport{TLSClientConfig: conf},
 	}, nil
+}
+
+// 从 io.Reader 读取内容，并填充到 map 中
+func mapFromReader(r io.Reader) (map[string]string, error) {
+	ret := make(map[string]string, 10)
+	d := xml.NewDecoder(r)
+	for token, err := d.Token(); true; token, err = d.Token() {
+		if err != nil {
+			return nil, err
+		}
+
+		var key, val string
+		switch t := token.(type) {
+		case xml.StartElement:
+			key = t.Name.Local
+		case xml.CharData:
+			val = string(t)
+		}
+		ret[key] = val
+	}
+
+	return ret, nil
 }

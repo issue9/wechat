@@ -5,7 +5,6 @@
 package notify
 
 import (
-	"encoding/xml"
 	"fmt"
 	"io"
 	"reflect"
@@ -14,21 +13,12 @@ import (
 	"time"
 
 	"github.com/issue9/wechat/pay"
+	"github.com/issue9/wechat/pay/internal"
 )
 
 // Return 微信返回的信息结构
 type Return struct {
-	Code               string `xml:"return_code"`          // 返回状态码
-	Message            string `xml:"return_msg"`           // 返回信息
-	AppID              string `xml:"appid"`                // 公众账号 ID 或是企业号 corpid
-	MchID              string `xml:"mch_id"`               // 商户号
 	DeviceInfo         string `xml:"device_info"`          // 设备号
-	NonceStr           string `xml:"nonce_str"`            // 随机字符串
-	Sign               string `xml:"sign"`                 // 签名
-	SignType           string `xml:"sign_type"`            // 签名类型
-	ResultCode         string `xml:"result_code"`          // 业务结果，SUCCESS/FAIL
-	ErrCode            string `xml:"err_code"`             // 错误代码
-	ErrCodeDesc        string `xml:"err_code_des"`         // 错误代码描述
 	OpenID             string `xml:"openid"`               // 用户标识
 	IsSubscribe        string `xml:"is_subscribe"`         // 是否关注公众账号，Y-关注，N-未关注
 	TradeType          string `xml:"trade_type"`           // 交易类型，JSAPI、NATIVE、APP
@@ -59,51 +49,19 @@ func (ret *Return) Subscribed() bool {
 	return ret.IsSubscribe == "Y"
 }
 
-// OK pay.Retuner 接口
-func (ret *Return) OK() bool {
-	return ret.Code == pay.Success
-}
-
-// Success pay.Retuner 接口
-func (ret *Return) Success() bool {
-	return ret.OK() && ret.ResultCode == pay.Success
-}
-
 // From 从 r 中读取数据到 *Return 中。
-func (ret *Return) From(r io.Reader) error {
-	d := xml.NewDecoder(r)
-	values, err := values(ret)
-	if err != nil {
-		return err
+func newReturn(params map[string]string) (*Return, error) {
+	ret := &Return{}
+	if err := internal.Map2XMLObj(params, ret); err != nil {
+		return nil, err
 	}
 
-	for token, err := d.Token(); true; token, err = d.Token() {
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-
-		elem, ok := token.(xml.StartElement)
-		if !ok || elem.Name.Local == "xml" { // 忽略非 StartElement 和 xml 标签
-			continue
-		}
-		name := elem.Name.Local // xml 元素的名称
-
-		token, err = d.Token()
-		if err != nil { // 此处若 err == io.EOF，必须是格式错误，不用专门判断
-			return err
-		}
-		bs, ok := token.(xml.CharData)
-		if !ok {
-			return fmt.Errorf("无法转换成 xml.CharData")
-		}
-		val := string(bs) // xml 元素的值
+	for name, val := range params {
 		switch {
 		case strings.HasPrefix(name, "coupon_id_"):
 			index, err := getCouponIndex(name, "coupon_id_")
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			id, err := strconv.Atoi(val)
@@ -121,7 +79,7 @@ func (ret *Return) From(r io.Reader) error {
 		case strings.HasPrefix(name, "coupon_type_"):
 			index, err := getCouponIndex(name, "coupon_type_")
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if index >= len(ret.Coupons) { // 不存在
@@ -134,12 +92,12 @@ func (ret *Return) From(r io.Reader) error {
 		case strings.HasPrefix(name, "coupon_fee_"):
 			index, err := getCouponIndex(name, "coupon_fee_")
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			fee, err := strconv.Atoi(string(val))
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if index >= len(ret.Coupons) { // 不存在
@@ -149,36 +107,21 @@ func (ret *Return) From(r io.Reader) error {
 				break
 			}
 			ret.Coupons[index].Fee = fee
-		default:
-			item, found := values[name]
-			if !found { // 不存在的字段
-				continue
-			}
-
-			if item.Kind() == reflect.String {
-				item.SetString(val)
-			} else if item.Kind() == reflect.Int {
-				i, err := strconv.ParseInt(val, 10, 32)
-				if err != nil {
-					return err
-				}
-				item.SetInt(i)
-			}
 		} // ned switch
 	} // end for
 
 	if ret.CouponCount != len(ret.Coupons) {
-		return fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponCount, len(ret.Coupons))
+		return nil, fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponCount, len(ret.Coupons))
 	}
 
 	// 转换时间值
 	end, err := time.Parse("20060102150405", ret.TimeEnd)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	ret.end = end
 
-	return nil
+	return ret, nil
 }
 
 // 将 Return 各个字段以 xml 标签中的值进行索引，方便查找。

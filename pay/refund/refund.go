@@ -12,7 +12,8 @@ import (
 
 // Refund 退款数据
 type Refund struct {
-	DeviceInfo    string
+	DeviceInfo    string // 设备信息
+	SignType      string // 签名类型
 	TransactionID string // 微信订单号
 	OutTradeNO    string // 商户订单号，与微信订单号，必须二选一
 	OutRefundNO   string // 商户退款单号，商户系统内部唯一
@@ -22,18 +23,22 @@ type Refund struct {
 	OpUserID      string // 操作员帐号, 默认为商户号
 	RefundAccount string // 退款资金来源 REFUND_SOURCE_RECHARGE_FUNDS
 
-	conf *pay.Config
+	p *pay.Pay
 }
 
-// Params pay.Paramser 接口
-func (r *Refund) Params() (map[string]string, error) {
+// New 声明新的 Refund 实例
+func New(p *pay.Pay) *Refund {
+	return &Refund{
+		p: p,
+	}
+}
+
+func (r *Refund) params() (map[string]string, error) {
 	return map[string]string{
-		"appid":           r.conf.AppID,
-		"mch_id":          r.conf.MchID,
 		"device_info":     r.DeviceInfo,
 		"nonce_str":       "", // 为空，由 pay.Post 自行计算
 		"sign":            "",
-		"sign_type":       r.conf.SignType,
+		"sign_type":       r.SignType,
 		"out_trade_no":    r.OutTradeNO,
 		"transaction_id":  r.TransactionID,
 		"out_refund_no":   r.OutRefundNO,
@@ -47,7 +52,18 @@ func (r *Refund) Params() (map[string]string, error) {
 
 // Do 执行退款操作
 func (r *Refund) Do() (*Return, error) {
-	ret := &Return{}
-	err := pay.Post(r.conf, pay.RefundURL, r, ret)
-	return ret, err
+	params, err := r.params()
+	if err != nil {
+		return nil, err
+	}
+	m, err := r.p.Refund(params)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = r.p.ValidateAll(m); err != nil {
+		return nil, err
+	}
+
+	return newReturn(m)
 }

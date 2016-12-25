@@ -6,9 +6,9 @@ package unifiedorder
 
 // Return 表示统一下单功能的返回值类型。
 type Return struct {
-	TradeType string `xml:"trade_type"`
-	PrepayID  string `xml:"prepay_id"`
-	CodeURL   string `xml:"code_url"`
+	TradeType string
+	PrepayID  string
+	CodeURL   string
 }
 
 func newReturn(params map[string]string) *Return {
