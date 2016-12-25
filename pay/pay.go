@@ -2,103 +2,145 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// Package pay 微信支付的相关接口
 package pay
 
 import (
 	"bytes"
-	"crypto/md5"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/hex"
 	"encoding/xml"
-	"hash"
+	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"sort"
-	"strings"
-
-	"github.com/issue9/rands"
 )
 
-// NonceString 函数可用的字符
-var nonceStringChars = []byte("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+// Pay 支付的基本配置
+type Pay struct {
+	MchID  string
+	AppID  string
+	APIKey string
+	client *http.Client
+}
+
+// New 声明一个新的 *Pay 实例
+func New(mchid, appid, apikey string, client *http.Client) *Pay {
+	if client == nil {
+		client = http.DefaultClient
+	}
+	return &Pay{
+		MchID:  mchid,
+		AppID:  appid,
+		APIKey: apikey,
+		client: client,
+	}
+}
+
+// NewTLSPay 声明一个带证书的支付实例
+func NewTLSPay(mchid, appid, apikey, certPath, keyPath, rootCAPath string) (*Pay, error) {
+	client, err := newTLSClient(certPath, keyPath, rootCAPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(mchid, appid, apikey, client), nil
+}
 
 // Post 发送请求，会优先使用 params 中的相关参数。
 // 比如：若已经指定了 appid，会不会使用 conf.AppID；
 // 若使用了 sign，则不会再计算 sign 值。
-func Post(conf *Config, client *http.Client, url string, params Paramser, ret Returner) error {
-	if client == nil {
-		client = http.DefaultClient
-	}
-
-	ps, err := params.Params()
-	if err != nil {
-		return err
-	}
-
+func (p *Pay) Post(url string, params map[string]string) (map[string]string, error) {
 	buf := new(bytes.Buffer)
-	if err = map2XML(conf, ps, buf); err != nil {
-		return err
+	if err := p.map2XML(params, buf); err != nil {
+		return nil, err
 	}
-	resp, err := client.Post(url, "application/xml", buf)
+	resp, err := p.client.Post(url, "application/xml", buf)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	return ret.From(resp.Body)
+	return mapFromReader(resp.Body)
 }
 
-// TLSClient 获取一个带安全证书的 http.Client 实例
-func TLSClient(cert, key, root string) (*http.Client, error) {
-	c, err := tls.LoadX509KeyPair(cert, key)
-	if err != nil {
-		return nil, err
+// ValidateReturn 仅验证 return_code
+func (p *Pay) ValidateReturn(params map[string]string) error {
+	if params["return_code"] != Success {
+		return &ReturnError{
+			Code:    params["return_code"],
+			Message: params["return_msg"],
+		}
 	}
 
-	r, err := ioutil.ReadFile(root)
-	if err != nil {
-		return nil, err
-	}
-
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(r)
-
-	conf := &tls.Config{
-		Certificates: []tls.Certificate{c},
-		RootCAs:      pool,
-	}
-
-	return &http.Client{
-		Transport: &http.Transport{TLSClientConfig: conf},
-	}, nil
+	return nil
 }
 
-// NonceString 产生一段随机字符串
-func NonceString() string {
-	return rands.String(24, 31, nonceStringChars)
+// ValidateResult 同时验证 return_code 和 result_code
+func (p *Pay) ValidateResult(params map[string]string) error {
+	if err := p.ValidateReturn(params); err != nil {
+		return err
+	}
+
+	if params["result_code"] != Success {
+		return &ReturnError{
+			Code:    params["err_code"],
+			Message: params["err_code_des"],
+		}
+	}
+
+	return nil
 }
 
-func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
+// ValidateSign 同时验证 ValidateResult 和 签名
+func (p *Pay) ValidateSign(params map[string]string) error {
+	if err := p.ValidateResult(params); err != nil {
+		return err
+	}
+
+	sign1 := params["sign"]
+	if sign1 == "" {
+		return errors.New("不存在 sign 字段")
+	}
+
+	if sign1 != Sign(p.APIKey, params) {
+		return errors.New("签名验证无法通过")
+	}
+
+	return nil
+}
+
+// ValidateAll 验证 ValidateSign 和 appid 及 mchid 是否匹配
+func (p *Pay) ValidateAll(params map[string]string) error {
+	if err := p.ValidateSign(params); err != nil {
+		return err
+	}
+
+	if params["mch_id"] != p.MchID {
+		return errors.New("mch_id 不匹配")
+	}
+
+	if params["appid"] != p.AppID {
+		return errors.New("appid 不匹配")
+	}
+
+	return nil
+}
+
+func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	if params["appid"] == "" {
-		params["appid"] = conf.AppID
+		params["appid"] = p.AppID
 	}
 
 	if params["mch_id"] == "" {
-		params["mch_id"] = conf.MchID
+		params["mch_id"] = p.MchID
 	}
 
 	if params["nonce_str"] == "" {
-		params["nonce_str"] = conf.NonceStr
-	}
-
-	if params["sign_type"] == "" {
-		params["sign_type"] = conf.SignType
+		params["nonce_str"] = NonceString()
 	}
 
 	if params["sign"] == "" {
-		params["sign"] = sign(conf.APIKey, params)
+		params["sign"] = Sign(p.APIKey, params)
 	}
 
 	buf.WriteString("<xml>")
@@ -124,47 +166,48 @@ func map2XML(conf *Config, params map[string]string, buf *bytes.Buffer) error {
 	return nil
 }
 
-// 微信支付签名
-//
-// apikey 支付用的 apikey
-// params 签名用的参数
-// fn 签名的类型，为空则为 md5
-func sign(apikey string, params map[string]string) string {
-	/* 排序 */
-	keys := make([]string, 0, len(params))
-	for k := range params {
-		if k == "sign" {
-			continue
+func mapFromReader(r io.Reader) (map[string]string, error) {
+	ret := make(map[string]string, 10)
+	d := xml.NewDecoder(r)
+	for token, err := d.Token(); true; token, err = d.Token() {
+		if err != nil {
+			return nil, err
 		}
 
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	/* 拼接字符串 */
-	buf := new(bytes.Buffer)
-	for _, k := range keys {
-		v := params[k]
-		if len(v) == 0 {
-			continue
+		var key, val string
+		switch t := token.(type) {
+		case xml.StartElement:
+			key = t.Name.Local
+		case xml.CharData:
+			val = string(t)
 		}
-
-		buf.WriteString(k)
-		buf.WriteByte('=')
-		buf.WriteString(v)
-		buf.WriteByte('&')
-	}
-	buf.WriteString("key=")
-	buf.WriteString(apikey)
-
-	var h hash.Hash
-	switch params["sign_type"] {
-	case SignTypeMD5:
-		h = md5.New()
-	case SignTypeHmacSha256:
-		//h = hmac.New(sha256.New, []byte("123"))
+		ret[key] = val
 	}
 
-	h.Write(buf.Bytes())
-	return strings.ToUpper(hex.EncodeToString(h.Sum(nil)))
+	return ret, nil
+}
+
+// 获取一个带安全证书的 http.Client 实例
+func newTLSClient(cert, key, root string) (*http.Client, error) {
+	c, err := tls.LoadX509KeyPair(cert, key)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := ioutil.ReadFile(root)
+	if err != nil {
+		return nil, err
+	}
+
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(r)
+
+	conf := &tls.Config{
+		Certificates: []tls.Certificate{c},
+		RootCAs:      pool,
+	}
+
+	return &http.Client{
+		Transport: &http.Transport{TLSClientConfig: conf},
+	}, nil
 }
