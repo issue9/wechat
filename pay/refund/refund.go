@@ -2,6 +2,17 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Package refund 执行退款操作
+//
+//  p := pay.New(...)
+//  r := refund.Refund{
+//      Pay: p,
+//      OpUserID: "10001",
+//      SignType: pay.SignTypeMD5,
+//  }
+//
+//  // 执行退款操作
+//  r.OutTradeNO(...)
 package refund
 
 import (
@@ -12,56 +23,50 @@ import (
 
 // Refund 退款数据
 type Refund struct {
+	Pay           *pay.Pay
 	DeviceInfo    string // 设备信息
 	SignType      string // 签名类型
-	TransactionID string // 微信订单号
-	OutTradeNO    string // 商户订单号，与微信订单号，必须二选一
-	OutRefundNO   string // 商户退款单号，商户系统内部唯一
-	TotalFee      int    // 订单金额，单位为分，只能为整数
-	RefundFee     int    // 退款总金额，订单总金额，单位为分，只能为整数
 	RefundFeeType string // 货币类型
 	OpUserID      string // 操作员帐号, 默认为商户号
-	RefundAccount string // 退款资金来源 REFUND_SOURCE_RECHARGE_FUNDS
-
-	p *pay.Pay
+	RefundAccount string // 退款资金来源
 }
 
-// New 声明新的 Refund 实例
-func New(p *pay.Pay) *Refund {
-	return &Refund{
-		p: p,
-	}
-}
-
-func (r *Refund) params() (map[string]string, error) {
+func (r *Refund) params(outRefundNO, outTradeNO, transactionID string, totalFee, refundFee int) map[string]string {
 	return map[string]string{
 		"device_info":     r.DeviceInfo,
 		"sign_type":       r.SignType,
-		"out_trade_no":    r.OutTradeNO,
-		"transaction_id":  r.TransactionID,
-		"out_refund_no":   r.OutRefundNO,
-		"total_fee":       strconv.Itoa(r.TotalFee),
-		"refund_fee":      strconv.Itoa(r.RefundFee),
+		"out_trade_no":    outTradeNO,
+		"transaction_id":  transactionID,
+		"out_refund_no":   outRefundNO,
+		"total_fee":       strconv.Itoa(totalFee),
+		"refund_fee":      strconv.Itoa(refundFee),
 		"refund_fee_type": r.RefundFeeType,
 		"op_user_id":      r.OpUserID,
 		"refund_account":  r.RefundAccount,
-	}, nil
+	}
 }
 
-// Do 执行退款操作
-func (r *Refund) Do() (*Return, error) {
-	params, err := r.params()
-	if err != nil {
-		return nil, err
-	}
-	m, err := r.p.Refund(params)
+// OutTradeNO 通过 outTradeNO 执行退款操作
+func (r *Refund) OutTradeNO(outRefundNO, outTradeNO string, totalFee, refundFee int) (*Return, error) {
+	params := r.params(outRefundNO, outTradeNO, "", totalFee, refundFee)
+	return r.refund(params)
+}
+
+// TransactionID 通过 transcationID 执行退款操作
+func (r *Refund) TransactionID(outRefundNO, transactionID string, totalFee, refundFee int) (*Return, error) {
+	params := r.params(outRefundNO, "", transactionID, totalFee, refundFee)
+	return r.refund(params)
+}
+
+func (r *Refund) refund(params map[string]string) (*Return, error) {
+	maps, err := r.Pay.Refund(params)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = r.p.ValidateAll(m); err != nil {
+	if err = r.Pay.ValidateAll(maps); err != nil {
 		return nil, err
 	}
 
-	return newReturn(m)
+	return newReturn(maps)
 }

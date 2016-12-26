@@ -7,8 +7,6 @@ package pay
 import (
 	"strconv"
 	"strings"
-
-	"github.com/issue9/wechat/pay"
 )
 
 // Coupon 代金券
@@ -67,7 +65,7 @@ func GetCoupons(params map[string]string) ([]*Coupon, error) {
 			}
 
 			if index >= len(coupons) { // 不存在
-				coupons = append(coupons, &pay.Coupon{
+				coupons = append(coupons, &Coupon{
 					Fee: fee,
 				})
 				break

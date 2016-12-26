@@ -80,8 +80,8 @@ func (p *Pay) UnifiedOrder(params map[string]string) (map[string]string, error) 
 	return p.Post(UnifiedOrderURL, params)
 }
 
-// OrderQueryURL 订单查询
-func (p *Pay) OrderQueryURL(params map[string]string) (map[string]string, error) {
+// OrderQuery 订单查询
+func (p *Pay) OrderQuery(params map[string]string) (map[string]string, error) {
 	return p.Post(OrderQueryURL, params)
 }
 

@@ -47,11 +47,16 @@ func (ret *Return) Subscribed() bool {
 }
 
 // Read 从 r 读取内容，并尝试转换成 Return 实例
-func Read(r io.Reader) (*Return, error) {
+func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 	params, err := internal.MapFromReader(r)
 	if err != nil {
 		return nil, err
 	}
+
+	if err = p.ValidateAll(params); err != nil {
+		return nil, err
+	}
+
 	ret := &Return{}
 	err = internal.Map2XMLObj(params, ret)
 	if err != nil {
@@ -69,7 +74,7 @@ func Read(r io.Reader) (*Return, error) {
 	ret.Coupons = coupons
 
 	// 转换时间值
-	end, err := time.Parse("20060102150405", ret.TimeEnd)
+	end, err := time.Parse(pay.DateFormat, ret.TimeEnd)
 	if err != nil {
 		return nil, err
 	}

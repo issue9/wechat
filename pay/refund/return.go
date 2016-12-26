@@ -39,7 +39,7 @@ func newReturn(params map[string]string) (*Return, error) {
 		return nil, err
 	}
 
-	coupons, err := pay.GetCoupon(params)
+	coupons, err := pay.GetCoupons(params)
 	if err != nil {
 		return nil, err
 	}

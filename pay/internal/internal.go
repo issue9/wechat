@@ -6,6 +6,7 @@ package internal
 
 import (
 	"encoding/xml"
+	"errors"
 	"io"
 	"reflect"
 	"strconv"
@@ -16,18 +17,31 @@ func MapFromReader(r io.Reader) (map[string]string, error) {
 	ret := make(map[string]string, 10)
 	d := xml.NewDecoder(r)
 	for token, err := d.Token(); true; token, err = d.Token() {
-		if err != nil {
+		if err == io.EOF {
+			break
+		} else if err != nil {
 			return nil, err
 		}
 
-		var key, val string
-		switch t := token.(type) {
-		case xml.StartElement:
-			key = t.Name.Local
-		case xml.CharData:
-			val = string(t)
+		elem, ok := token.(xml.StartElement)
+		if !ok {
+			continue
 		}
-		ret[key] = val
+
+		name := elem.Name.Local
+		if name == "xml" {
+			continue
+		}
+
+		token, err = d.Token()
+		if err != nil { // 此处或是 io.EOF，也是属于非正常结束
+			return nil, err
+		}
+		bs, ok := token.(xml.CharData)
+		if !ok {
+			return nil, errors.New("无法转换成 xml.CharData")
+		}
+		ret[name] = string(bs)
 	}
 
 	return ret, nil

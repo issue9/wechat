@@ -10,6 +10,9 @@ const (
 	Fail    = "FAIL"
 )
 
+// DateFormat 日期格式
+const DateFormat = "20060102150405"
+
 // 接口地址
 const (
 	UnifiedOrderURL = "https://api.mch.weixin.qq.com/pay/unifiedorder"
