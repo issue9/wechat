@@ -5,20 +5,16 @@
 // Package unifiedorder 执行微信的下单操作。
 // 相对于 pay.Post，会便利很多，不需要每次都指定所有参数。
 //  p := pay.New(...)
-//  conf := &unifiedorder.Config{
-//      Pay: p,
-//      Credit: true,
-//      FeeType: "CNY",
-//  }
+//  oconf := unifiedorder.New(p, pay.TradeTypeJSSDK, ...)
 //
 //  // 下单支付
-//  o := conf.NewOrder()
+//  o := oconf.NewOrder()
 //  o.Body = "..."
 //  o.Goods(...)
 //  o.Pay(...)
 //
 //  // 另一笔支付操作
-//  o = conf.NewOrder()
+//  o = oconf.NewOrder()
 //  o.Body = "..."
 //  o.Goods(...)
 //  o.Pay(...)
@@ -35,9 +31,9 @@ import (
 
 const limitPayNoCredit = "no_credit"
 
-// Config 表示订单的一些公用数据。
-type Config struct {
-	Pay            *pay.Pay
+// Order 订单数据
+type Order struct {
+	pay            *pay.Pay
 	DeviceInfo     string        // 设备号
 	SignType       string        // 签名类型
 	FeeType        string        // 货币类型，默认 CNY
@@ -46,10 +42,7 @@ type Config struct {
 	NotifyURL      string        // 通知地址
 	TradeType      string        // 交易类型
 	Credit         bool          // 是否允许使用信用卡
-}
 
-// Order 订单数据
-type Order struct {
 	Body       string    // 商品描述
 	Attach     string    // 附加数据
 	OutTradeNO string    // 商户订单号
@@ -58,9 +51,7 @@ type Order struct {
 	Tag        string    // 商品标记
 	ProductID  string    // 商品 ID
 	OpenID     string    // 用户标识
-
-	conf  *Config
-	goods []*Good
+	goods      []*Good
 }
 
 // Good 商品详情
@@ -81,20 +72,40 @@ type Return struct {
 	CodeURL   string
 }
 
+// New 新的订单实例
+func New(p *pay.Pay, tradeType, notifyURL string) *Order {
+	return &Order{
+		pay:       p,
+		TradeType: tradeType,
+		NotifyURL: notifyURL,
+	}
+}
+
 // 获取支付类型
-func (conf *Config) limitPay() string {
-	if !conf.Credit {
+func (o *Order) limitPay() string {
+	if !o.Credit {
 		return limitPayNoCredit
 	}
 	return ""
 }
 
 // NewOrder 生成一条新的订单
-func (conf *Config) NewOrder() *Order {
-	return &Order{
-		conf:  conf,
-		goods: []*Good{},
-	}
+func (o *Order) NewOrder() *Order {
+	ret := &Order{}
+	*ret = *o
+
+	// 重置数据
+	ret.Body = ""
+	ret.Attach = ""
+	ret.OutTradeNO = ""
+	ret.TotalFee = 0
+	ret.Start = time.Time{}
+	ret.Tag = ""
+	ret.ProductID = ""
+	ret.OpenID = ""
+	ret.goods = ret.goods[:0]
+
+	return ret
 }
 
 // Goods 为当前订单添加一条或是多条物品记录
@@ -130,8 +141,8 @@ func (o *Order) params() (map[string]string, error) {
 	var start, end string
 	if !o.Start.IsZero() {
 		start = o.Start.Format(pay.DateFormat)
-		if o.conf.ExpireIn > 0 {
-			end = o.Start.Add(o.conf.ExpireIn).Format(pay.DateFormat)
+		if o.ExpireIn > 0 {
+			end = o.Start.Add(o.ExpireIn).Format(pay.DateFormat)
 		}
 	}
 
@@ -141,22 +152,22 @@ func (o *Order) params() (map[string]string, error) {
 	}
 
 	return map[string]string{
-		"device_info":      o.conf.DeviceInfo,
-		"sign_type":        o.conf.SignType,
+		"device_info":      o.DeviceInfo,
+		"sign_type":        o.SignType,
 		"body":             o.Body,
 		"detail":           "<![CDATA[" + string(detail) + "]]>",
 		"attach":           o.Attach,
 		"out_trade_no":     o.OutTradeNO,
-		"fee_type":         o.conf.FeeType,
+		"fee_type":         o.FeeType,
 		"total_fee":        strconv.Itoa(totalFee),
-		"spbill_create_ip": o.conf.SpbillCreateIP,
+		"spbill_create_ip": o.SpbillCreateIP,
 		"time_start":       start,
 		"time_expire":      end,
 		"tag":              o.Tag,
-		"notify_url":       o.conf.NotifyURL,
-		"trade_type":       o.conf.TradeType,
+		"notify_url":       o.NotifyURL,
+		"trade_type":       o.TradeType,
 		"product_id":       o.ProductID,
-		"limit_pay":        o.conf.limitPay(),
+		"limit_pay":        o.limitPay(),
 		"openid":           o.OpenID,
 	}, nil
 }
@@ -174,12 +185,12 @@ func (o *Order) Pay() (*Return, error) {
 	if err != nil {
 		return nil, err
 	}
-	m, err := o.conf.Pay.UnifiedOrder(params)
+	m, err := o.pay.UnifiedOrder(params)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = o.conf.Pay.ValidateAll(m); err != nil {
+	if err = o.pay.ValidateAll(m); err != nil {
 		return nil, err
 	}
 

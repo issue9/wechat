@@ -10,14 +10,14 @@ import (
 	"github.com/issue9/assert"
 )
 
-func TestConfig_limitPay(t *testing.T) {
+func TestOrder_limitPay(t *testing.T) {
 	a := assert.New(t)
 
-	conf := &Config{}
-	a.Equal(conf.limitPay(), limitPayNoCredit)
+	o := &Order{}
+	a.Equal(o.limitPay(), limitPayNoCredit)
 
-	conf.Credit = true
-	a.Equal(conf.limitPay(), "")
+	o.Credit = true
+	a.Equal(o.limitPay(), "")
 }
 
 func TestOrder_totalFee(t *testing.T) {
