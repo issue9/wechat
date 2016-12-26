@@ -26,4 +26,10 @@
 |     +----- jssdk jssdk 相关的功能
 |
 +---- pay 支付接口
+      |
+      +--- unifiedorder 统一支付接口
+      |
+      +--- refund 退款接口
+      |
+      +--- notify 支付通知接口
 ```

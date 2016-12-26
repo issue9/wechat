@@ -32,6 +32,20 @@ import (
 const limitPayNoCredit = "no_credit"
 
 // Order 订单数据
+//
+// 订单数据中，包含了大量相同的数据，这些数据在每次
+// 支付时都重新声明是极大的浪费，所以建议先声明一个
+// 包含这些公用数据的 Order 实例，之后用 Order.NewOrder()
+// 生成一个新的 Order 实例，这个新的实例就继承这些数据。比如：
+//  conf := unifiedorder.New(...)
+//  conf.DeviceInfo = "WEB"
+//  conf.SignType = pay.SignTypeMD5
+//
+//  o1 := conf.NewOrder() // 继承了 conf.DeviceInfo 等数据
+//  o1.Body = "..."
+//  o1.Pay(...)
+//
+//  o2 := conf.NewOrder() // 依然从 conf 继承了 DeviceInfo 等数据
 type Order struct {
 	pay            *pay.Pay
 	DeviceInfo     string        // 设备号
@@ -73,11 +87,9 @@ type Return struct {
 }
 
 // New 新的订单实例
-func New(p *pay.Pay, tradeType, notifyURL string) *Order {
+func New(p *pay.Pay) *Order {
 	return &Order{
-		pay:       p,
-		TradeType: tradeType,
-		NotifyURL: notifyURL,
+		pay: p,
 	}
 }
 
