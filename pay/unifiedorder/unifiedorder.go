@@ -152,6 +152,7 @@ func (o *Order) params() (map[string]string, error) {
 
 	var start, end string
 	if !o.Start.IsZero() {
+		o.Start = o.Start.Add(pay.TimeFixed) // 时区调整
 		start = o.Start.Format(pay.DateFormat)
 		if o.ExpireIn > 0 {
 			end = o.Start.Add(o.ExpireIn).Format(pay.DateFormat)

@@ -4,11 +4,16 @@
 
 package pay
 
+import "time"
+
 // 返回状态的值
 const (
 	Success = "SUCCESS"
 	Fail    = "FAIL"
 )
+
+// TimeFixed 时间戳调整，东八区
+const TimeFixed time.Duration = 3600 * 8
 
 // DateFormat 日期格式
 const DateFormat = "20060102150405"

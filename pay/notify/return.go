@@ -75,6 +75,7 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 
 	// 转换时间值
 	end, err := time.Parse(pay.DateFormat, ret.TimeEnd)
+	end = end.Add(-pay.TimeFixed) // 返回的为区八区，需要减去，才是 UTC
 	if err != nil {
 		return nil, err
 	}
