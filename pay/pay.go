@@ -133,7 +133,7 @@ func (p *Pay) ValidateResult(params map[string]string) error {
 }
 
 // ValidateSign 同时验证 ValidateResult 和 签名
-func (p *Pay) ValidateSign(params map[string]string) error {
+func (p *Pay) ValidateSign(singType string, params map[string]string) error {
 	if err := p.ValidateResult(params); err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (p *Pay) ValidateSign(params map[string]string) error {
 		return ErrInvalidSign
 	}
 
-	if sign1 != Sign(p.apiKey, params) {
+	if sign1 != Sign(p.apiKey, singType, params) {
 		return ErrInvalidSign
 	}
 
@@ -151,8 +151,8 @@ func (p *Pay) ValidateSign(params map[string]string) error {
 }
 
 // ValidateAll 验证 ValidateSign 和 appid 及 mchid 是否匹配
-func (p *Pay) ValidateAll(params map[string]string) error {
-	if err := p.ValidateSign(params); err != nil {
+func (p *Pay) ValidateAll(signType string, params map[string]string) error {
+	if err := p.ValidateSign(signType, params); err != nil {
 		return err
 	}
 
@@ -182,7 +182,7 @@ func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	}
 
 	if params["sign"] == "" {
-		params["sign"] = Sign(p.apiKey, params)
+		params["sign"] = Sign(p.apiKey, params["sign_type"], params)
 	}
 
 	buf.WriteString("<xml>")

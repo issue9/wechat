@@ -203,7 +203,7 @@ func (o *Order) Pay() (*Return, error) {
 		return nil, err
 	}
 
-	if err = o.pay.ValidateAll(m); err != nil {
+	if err = o.pay.ValidateAll(o.SignType, m); err != nil {
 		return nil, err
 	}
 

@@ -53,7 +53,7 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 		return nil, err
 	}
 
-	if err = p.ValidateAll(params); err != nil {
+	if err = p.ValidateAll(params["sign_type"], params); err != nil {
 		return nil, err
 	}
 

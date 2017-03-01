@@ -64,7 +64,7 @@ func (r *Refund) refund(params map[string]string) (*Return, error) {
 		return nil, err
 	}
 
-	if err = r.Pay.ValidateAll(maps); err != nil {
+	if err = r.Pay.ValidateAll(r.SignType, maps); err != nil {
 		return nil, err
 	}
 
