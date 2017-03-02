@@ -48,7 +48,7 @@ func (ret *Return) Subscribed() bool {
 
 // Read 从 r 读取内容，并尝试转换成 Return 实例
 func Read(p *pay.Pay, r io.Reader) (*Return, error) {
-	params, err := internal.MapFromReader(r)
+	params, err := internal.MapFromXMLReader(r)
 	if err != nil {
 		return nil, err
 	}

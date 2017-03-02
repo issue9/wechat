@@ -12,8 +12,8 @@ import (
 	"strconv"
 )
 
-// MapFromReader 从 io.Reader 读取内容，并填充到 map 中
-func MapFromReader(r io.Reader) (map[string]string, error) {
+// MapFromXMLReader 从 io.Reader 读取内容，并填充到 map 中
+func MapFromXMLReader(r io.Reader) (map[string]string, error) {
 	ret := make(map[string]string, 10)
 	d := xml.NewDecoder(r)
 	for token, err := d.Token(); true; token, err = d.Token() {
@@ -75,7 +75,7 @@ func Map2XMLObj(maps map[string]string, v interface{}) error {
 	return nil
 }
 
-// 将 Return 各个字段以 xml 标签中的值进行索引，方便查找。
+// 将 obj 各个字段以 xml 标签中的值进行索引，方便查找。
 func values(obj interface{}) (map[string]reflect.Value, error) {
 	v := reflect.ValueOf(obj).Elem()
 	t := v.Type()

@@ -45,6 +45,21 @@ func New(mchid, appid, apikey string, client *http.Client) *Pay {
 	}
 }
 
+// MchID 获取商户 ID
+func (p *Pay) MchID() string {
+	return p.mchID
+}
+
+// AppID 获取 appid
+func (p *Pay) AppID() string {
+	return p.appID
+}
+
+// APIKey 获取 apikey
+func (p *Pay) APIKey() string {
+	return p.apiKey
+}
+
 // NewTLSPay 声明一个带证书的支付实例
 func NewTLSPay(mchid, appid, apikey, certPath, keyPath, rootCAPath string) (*Pay, error) {
 	client, err := newTLSClient(certPath, keyPath, rootCAPath)
@@ -72,7 +87,7 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 	}
 	defer resp.Body.Close()
 
-	return internal.MapFromReader(resp.Body)
+	return internal.MapFromXMLReader(resp.Body)
 }
 
 // UnifiedOrder 执行统一下单
@@ -110,7 +125,7 @@ func (p *Pay) Report(params map[string]string) (map[string]string, error) {
 	return p.Post(ReportURL, params)
 }
 
-// ValidateReturn 仅验证 return_code
+// ValidateReturn 验证从微信端返回的数据，仅验证 return_code
 func (p *Pay) ValidateReturn(params map[string]string) error {
 	if params["return_code"] != Success {
 		return errors.New(params["return_msg"])
@@ -119,7 +134,7 @@ func (p *Pay) ValidateReturn(params map[string]string) error {
 	return nil
 }
 
-// ValidateResult 同时验证 return_code 和 result_code
+// ValidateResult 验证从微信端返回的数据，同时验证 return_code 和 result_code
 func (p *Pay) ValidateResult(params map[string]string) error {
 	if err := p.ValidateReturn(params); err != nil {
 		return err
@@ -132,18 +147,18 @@ func (p *Pay) ValidateResult(params map[string]string) error {
 	return nil
 }
 
-// ValidateSign 同时验证 ValidateResult 和 签名
+// ValidateSign  验证从微信端返回的数据，同时验证 ValidateResult 和 签名
 func (p *Pay) ValidateSign(singType string, params map[string]string) error {
 	if err := p.ValidateResult(params); err != nil {
 		return err
 	}
 
-	sign1 := params["sign"]
-	if sign1 == "" {
+	sign := params["sign"]
+	if sign == "" {
 		return ErrInvalidSign
 	}
 
-	if sign1 != Sign(p.apiKey, singType, params) {
+	if sign != Sign(p.apiKey, singType, params) {
 		return ErrInvalidSign
 	}
 
@@ -165,6 +180,11 @@ func (p *Pay) ValidateAll(signType string, params map[string]string) error {
 	}
 
 	return nil
+}
+
+// Sign 获取签名字符串
+func (p *Pay) Sign(signType string, params map[string]string) string {
+	return Sign(p.APIKey(), signType, params)
 }
 
 // 将 map 转换成 xml，并写入到 buf

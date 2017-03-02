@@ -79,13 +79,6 @@ type Good struct {
 	Body         string `json:"body,omitempty"`
 }
 
-// Return 表示统一下单功能的返回值类型。
-type Return struct {
-	TradeType string
-	PrepayID  string
-	CodeURL   string
-}
-
 // New 新的订单实例
 func New(p *pay.Pay) *Order {
 	return &Order{
@@ -208,6 +201,7 @@ func (o *Order) Pay() (*Return, error) {
 	}
 
 	return &Return{
+		pay:       o.pay,
 		TradeType: m["trade_type"],
 		PrepayID:  m["prepay_id"],
 		CodeURL:   m["code_url"],
