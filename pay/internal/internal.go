@@ -49,10 +49,7 @@ func MapFromXMLReader(r io.Reader) (map[string]string, error) {
 
 // Map2XMLObj 将 map 转换到 v
 func Map2XMLObj(maps map[string]string, v interface{}) error {
-	values, err := values(v)
-	if err != nil {
-		return err
-	}
+	values := values(v)
 
 	for k, v := range maps {
 		val, found := values[k]
@@ -76,7 +73,7 @@ func Map2XMLObj(maps map[string]string, v interface{}) error {
 }
 
 // 将 obj 各个字段以 xml 标签中的值进行索引，方便查找。
-func values(obj interface{}) (map[string]reflect.Value, error) {
+func values(obj interface{}) map[string]reflect.Value {
 	v := reflect.ValueOf(obj).Elem()
 	t := v.Type()
 	values := make(map[string]reflect.Value, v.NumField())
@@ -86,5 +83,5 @@ func values(obj interface{}) (map[string]reflect.Value, error) {
 		values[tag] = v.Field(i)
 	}
 
-	return values, nil
+	return values
 }

@@ -5,6 +5,7 @@
 package notify
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -53,6 +54,10 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 		return nil, err
 	}
 
+	if len(params) == 0 {
+		return nil, errors.New("未读取到任何数据")
+	}
+
 	if err = p.ValidateAll(params["sign_type"], params); err != nil {
 		return nil, err
 	}
@@ -75,11 +80,10 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 
 	// 转换时间值
 	end, err := time.Parse(pay.DateFormat, ret.TimeEnd)
-	end = end.Add(-pay.TimeFixed) // 返回的为区八区，需要减去，才是 UTC
 	if err != nil {
 		return nil, err
 	}
-	ret.end = end
+	ret.end = end.Add(-pay.TimeFixed) // 返回的为区八区，需要减去，才是 UTC
 
 	return ret, nil
 }

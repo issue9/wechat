@@ -6,6 +6,7 @@ package notify
 
 import (
 	"encoding/xml"
+	"io"
 
 	"github.com/issue9/wechat/pay"
 )
@@ -31,4 +32,14 @@ func Fail(message string) *Response {
 		Code:    pay.Fail,
 		Message: message,
 	}
+}
+
+// WriteTo 写到 w 中
+func (r *Response) WriteTo(w io.Writer) (int, error) {
+	bs, err := xml.Marshal(r)
+	if err != nil {
+		return 0, err
+	}
+
+	return w.Write(bs)
 }

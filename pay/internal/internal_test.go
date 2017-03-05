@@ -19,7 +19,7 @@ func TestMapFromReader(t *testing.T) {
 	<mch_id><![CDATA[mch_id123]]></mch_id>
 	</xml>`)
 
-	m, err := MapFromReader(buf)
+	m, err := MapFromXMLReader(buf)
 	a.NotError(err).NotNil(m)
 	a.Equal(m["appid"], "1234567")
 	a.Equal(m["mch_id"], "mch_id123")

@@ -148,17 +148,22 @@ func (p *Pay) ValidateResult(params map[string]string) error {
 }
 
 // ValidateSign  验证从微信端返回的数据，同时验证 ValidateResult 和 签名
-func (p *Pay) ValidateSign(singType string, params map[string]string) error {
+func (p *Pay) ValidateSign(signType string, params map[string]string) error {
 	if err := p.ValidateResult(params); err != nil {
 		return err
 	}
 
-	sign := params["sign"]
-	if sign == "" {
+	sign1 := params["sign"]
+	if sign1 == "" {
 		return ErrInvalidSign
 	}
 
-	if sign != Sign(p.apiKey, singType, params) {
+	sign2, err := p.Sign(signType, params)
+	if err != nil {
+		return err
+	}
+
+	if sign1 != sign2 {
 		return ErrInvalidSign
 	}
 
@@ -183,7 +188,7 @@ func (p *Pay) ValidateAll(signType string, params map[string]string) error {
 }
 
 // Sign 获取签名字符串
-func (p *Pay) Sign(signType string, params map[string]string) string {
+func (p *Pay) Sign(signType string, params map[string]string) (string, error) {
 	return Sign(p.APIKey(), signType, params)
 }
 
@@ -202,7 +207,11 @@ func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	}
 
 	if params["sign"] == "" {
-		params["sign"] = Sign(p.apiKey, params["sign_type"], params)
+		sign, err := p.Sign(params["sign_type"], params)
+		if err != nil {
+			return err
+		}
+		params["sign"] = sign
 	}
 
 	buf.WriteString("<xml>")

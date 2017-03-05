@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"hash"
 	"sort"
 	"strings"
@@ -41,7 +42,7 @@ func NonceString() string {
 // apikey 支付用的 apikey
 // params 签名用的参数
 // fn 签名的类型，为空则为 md5
-func Sign(apikey, signType string, params map[string]string) string {
+func Sign(apikey, signType string, params map[string]string) (string, error) {
 	/* 排序 */
 	keys := make([]string, 0, len(params))
 	for k := range params {
@@ -71,12 +72,14 @@ func Sign(apikey, signType string, params map[string]string) string {
 
 	var h hash.Hash
 	switch signType {
-	case SignTypeMD5:
+	case "", SignTypeMD5:
 		h = md5.New()
 	case SignTypeHmacSha256:
 		//h = hmac.New(sha256.New, []byte("123"))
+	default:
+		return "", fmt.Errorf("无效的签名类型：%v", signType)
 	}
 
 	h.Write(buf.Bytes())
-	return strings.ToUpper(hex.EncodeToString(h.Sum(nil)))
+	return strings.ToUpper(hex.EncodeToString(h.Sum(nil))), nil
 }

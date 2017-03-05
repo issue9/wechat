@@ -30,7 +30,7 @@ type BrandWCPayRequest struct {
 }
 
 // GetBrandWCPayRequest 获取 BrandWCPayRequest 数据
-func (r *Return) GetBrandWCPayRequest(signType string) *BrandWCPayRequest {
+func (r *Return) GetBrandWCPayRequest(signType string) (*BrandWCPayRequest, error) {
 	now := time.Now().Unix()
 	ret := &BrandWCPayRequest{
 		AppID:       r.pay.AppID(),
@@ -47,7 +47,11 @@ func (r *Return) GetBrandWCPayRequest(signType string) *BrandWCPayRequest {
 		"package":   ret.Package,
 		"signType":  ret.SignType,
 	}
-	ret.PaySign = r.pay.Sign(signType, params)
+	sign, err := r.pay.Sign(signType, params)
+	if err != nil {
+		return nil, err
+	}
+	ret.PaySign = sign
 
-	return ret
+	return ret, nil
 }
