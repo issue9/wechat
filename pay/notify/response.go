@@ -7,6 +7,7 @@ package notify
 import (
 	"encoding/xml"
 	"io"
+	"net/http"
 
 	"github.com/issue9/wechat/pay"
 )
@@ -42,4 +43,11 @@ func (r *Response) WriteTo(w io.Writer) (int, error) {
 	}
 
 	return w.Write(bs)
+}
+
+// Render 输出到客户端
+func (r *Response) Render(state int, w http.ResponseWriter) {
+	w.WriteHeader(state)
+	w.Header().Add("ContentType", "application/xml")
+	r.WriteTo(w)
 }
