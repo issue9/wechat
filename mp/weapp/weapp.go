@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Package weapp 小程序的相关操作
 package weapp
 
 import (
@@ -17,15 +18,15 @@ const (
 	loginURL = "https://api.weixin.qq.com/sns/jscode2session"
 )
 
-// LoginResponse 返回的数据
-type LoginResponse struct {
+// Response 返回的数据
+type Response struct {
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
 	ExpiresIn  string `json:"expires_in"`
 }
 
 // Authorization 执行登录验证，并获取相应的数据
-func Authorization(appid, secret, jscode string) (*LoginResponse, error) {
+func Authorization(appid, secret, jscode string) (*Response, error) {
 	vals := url.Values{}
 	vals.Set("grant_type", grantType)
 	vals.Set("appid", appid)
@@ -41,7 +42,7 @@ func Authorization(appid, secret, jscode string) (*LoginResponse, error) {
 	bs, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 
-	data := &LoginResponse{}
+	data := &Response{}
 	if err := json.Unmarshal(bs, data); err != nil {
 		return nil, err
 	}

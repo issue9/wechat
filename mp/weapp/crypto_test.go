@@ -34,7 +34,8 @@ oKlaRv85IfVunYzO0IKXsyl7JCUjCpoG
 20f0a04COwfneQAGGwd5oa+T8yO5hzuy
 Db/XcxxmK01EpqOyuxINew==`
 
-	data, err := Decode(appid, sessionKey, encryptedData, iv)
-	a.NotError(err)
+	data, watermark, err := Decode(appid, sessionKey, encryptedData, iv)
+	a.NotError(err).NotNil(data).NotNil(watermark)
+	a.Equal(appid, watermark.Appid)
 	a.TB().Log(string(data))
 }
