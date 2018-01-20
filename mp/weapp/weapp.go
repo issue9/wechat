@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/issue9/wechat/mp/common/result"
 )
 
 const (
@@ -22,7 +24,7 @@ const (
 type Response struct {
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
-	ExpiresIn  string `json:"expires_in"`
+	ExpiresIn  int    `json:"expires_in"`
 }
 
 // Authorization 执行登录验证，并获取相应的数据
@@ -47,5 +49,13 @@ func Authorization(appid, secret, jscode string) (*Response, error) {
 		return nil, err
 	}
 
-	return data, nil
+	if data.Openid != "" { // 正常数据，肯定有 openid
+		return data, nil
+	}
+
+	rslt := &result.Result{}
+	if err := json.Unmarshal(bs, rslt); err != nil {
+		return nil, err
+	}
+	return nil, rslt
 }
