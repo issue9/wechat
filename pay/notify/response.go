@@ -6,6 +6,7 @@ package notify
 
 import (
 	"encoding/xml"
+	"errors"
 	"io"
 	"net/http"
 
@@ -35,8 +36,7 @@ func Fail(message string) *Response {
 	}
 }
 
-// WriteTo 写到 w 中
-func (r *Response) WriteTo(w io.Writer) (int, error) {
+func (r *Response) writeTo(w io.Writer) (int, error) {
 	bs, err := xml.Marshal(r)
 	if err != nil {
 		return 0, err
@@ -46,8 +46,17 @@ func (r *Response) WriteTo(w io.Writer) (int, error) {
 }
 
 // Render 输出到客户端
-func (r *Response) Render(state int, w http.ResponseWriter) {
+func (r *Response) Render(state int, w http.ResponseWriter) error {
 	w.WriteHeader(state)
-	w.Header().Add("ContentType", "application/xml")
-	r.WriteTo(w)
+	w.Header().Set("ContentType", "application/xml")
+
+	n, err := r.writeTo(w)
+	if err != nil {
+		return err
+	}
+	if n <= 0 {
+		return errors.New("写入的内容大小不正确")
+	}
+
+	return nil
 }

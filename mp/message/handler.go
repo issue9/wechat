@@ -51,6 +51,7 @@ func (b *HandlerBus) RegisterEvent(event string, h Handler) {
 	b.eventHandlers[event] = h
 }
 
+// Handler 实现的 Hnadler 接口
 func (b *HandlerBus) Handler(m Messager) ([]byte, error) {
 	var h Handler
 	var found bool
@@ -60,7 +61,7 @@ func (b *HandlerBus) Handler(m Messager) ([]byte, error) {
 		event := m.(Eventer).EventType()
 		h, found = b.eventHandlers[event]
 		if !found {
-			return nil, fmt.Errorf("事件[%v]的处理函数不存在")
+			return nil, fmt.Errorf("事件[%v]的处理函数不存在", event)
 		}
 		return h(m)
 	} else {
