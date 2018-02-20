@@ -9,15 +9,16 @@ import (
 	"testing"
 
 	"github.com/issue9/assert"
+	"github.com/issue9/wechat/common"
 )
 
 func TestResponse(t *testing.T) {
 	a := assert.New(t)
-	str := `<xml><return_code>code</return_code><return_msg>msg</return_msg></xml>`
+	str := `<xml><return_code><![CDATA[code]]></return_code><return_msg><![CDATA[msg]]></return_msg></xml>`
 
 	resp := &Response{
-		Code:    "code",
-		Message: "msg",
+		Code:    common.CData{Text: "code"},
+		Message: common.CData{Text: "msg"},
 	}
 	data, err := xml.Marshal(resp)
 	a.NotError(err).Equal(string(data), str)

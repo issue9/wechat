@@ -10,29 +10,30 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/issue9/wechat/common"
 	"github.com/issue9/wechat/pay"
 )
 
 // Response 向微信返馈的信息
 type Response struct {
-	XMLName xml.Name `xml:"xml"`
-	Code    string   `xml:"return_code"`
-	Message string   `xml:"return_msg"`
+	XMLName xml.Name     `xml:"xml"`
+	Code    common.CData `xml:"return_code"`
+	Message common.CData `xml:"return_msg"`
 }
 
 // Success 构建一个表示正常的 Response 实例
 func Success() *Response {
 	return &Response{
-		Code:    pay.Success,
-		Message: "OK",
+		Code:    common.CData{Text: pay.Success},
+		Message: common.CData{Text: "OK"},
 	}
 }
 
 // Fail 构建一个表示出错的 Response 实例，message 为出错信息
 func Fail(message string) *Response {
 	return &Response{
-		Code:    pay.Fail,
-		Message: message,
+		Code:    common.CData{Text: pay.Fail},
+		Message: common.CData{Text: message},
 	}
 }
 
