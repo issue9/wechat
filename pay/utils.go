@@ -25,15 +25,16 @@ var (
 )
 
 func init() {
-	randSrv, _ = rands.New(time.Now().Unix(), 100, 24, 32, nonceStringChars)
+	srv, err := rands.New(time.Now().Unix(), 100, 24, 32, nonceStringChars)
+	if err != nil {
+		panic(err)
+	}
+
+	randSrv = srv
 }
 
 // NonceString 产生一段随机字符串
 func NonceString() string {
-	if randSrv == nil {
-		return rands.String(24, 32, nonceStringChars)
-	}
-
 	return randSrv.String()
 }
 
