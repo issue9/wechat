@@ -2,6 +2,7 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
+// Package notify 用于处理微信回调通知
 package notify
 
 import (
@@ -68,7 +69,7 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 		return nil, err
 	}
 
-	coupons, err := pay.GetCoupons(params)
+	ret.Coupons, err = pay.GetCoupons(params)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,6 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 	if ret.CouponCount != len(ret.Coupons) {
 		return nil, fmt.Errorf("返回的代金券数量[%v]和实际的数量[%v]不相符", ret.CouponCount, len(ret.Coupons))
 	}
-	ret.Coupons = coupons
 
 	// 转换时间值
 	end, err := time.Parse(pay.DateFormat, ret.TimeEnd)

@@ -49,7 +49,7 @@ func (r *Response) writeTo(w io.Writer) (int, error) {
 // Render 输出到客户端
 func (r *Response) Render(state int, w http.ResponseWriter) error {
 	w.WriteHeader(state)
-	w.Header().Set("ContentType", "application/xml")
+	w.Header().Set("Content-Type", "application/xml")
 
 	n, err := r.writeTo(w)
 	if err != nil {
