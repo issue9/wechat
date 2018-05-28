@@ -10,6 +10,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+
+	"github.com/issue9/wechat/common"
 )
 
 // 几个错误信息
@@ -62,20 +64,11 @@ func Decode(appid, sessionkey, data, iv string) ([]byte, *Watermark, error) {
 	mode := cipher.NewCBCDecrypter(block, aesiv)
 	mode.CryptBlocks(cipherText, cipherText)
 
-	cipherText = pkcs7UnPadding(cipherText)
+	cipherText = common.PKCS7UnPadding(cipherText)
 	obj := &encyData{}
 	if err = json.Unmarshal(cipherText, obj); err != nil {
 		return nil, nil, err
 	}
 
 	return cipherText, obj.Watermark, nil
-}
-
-func pkcs7UnPadding(plantText []byte) []byte {
-	length := len(plantText)
-	unPadding := int(plantText[length-1])
-	if unPadding < 1 || unPadding > 32 {
-		unPadding = 0
-	}
-	return plantText[:(length - unPadding)]
 }
