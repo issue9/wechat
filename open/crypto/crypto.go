@@ -64,11 +64,13 @@ func New(appid, token, encodingAesKey string) (*Crypto, error) {
 	}, nil
 }
 
-// Encrypt 加密内容
-func (c *Crypto) Encrypt(xmltext []byte, timestamp, nonce string) ([]byte, error) {
+// Encrypt 加密 XML 内容
+//
+// 返回加密后的 XML 结构体内容以及签名内容
+func (c *Crypto) Encrypt(xmltext []byte, timestamp, nonce string) ([]byte, string, error) {
 	entext, err := c.encrypt(xmltext)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	if timestamp == "" {
@@ -76,11 +78,11 @@ func (c *Crypto) Encrypt(xmltext []byte, timestamp, nonce string) ([]byte, error
 	}
 
 	sign := sha1Sign(c.token, timestamp, nonce)
-	return []byte(fmt.Sprintf(messageFormat, entext, sign, timestamp, nonce)), nil
+	return []byte(fmt.Sprintf(messageFormat, entext, sign, timestamp, nonce)), sign, nil
 }
 
-// Decrypt 解密内容
-func (c *Crypto) Decrypt(sign, timestamp, nonce, body string) ([]byte, error) {
+// Decrypt 解密 XML 内容
+func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) ([]byte, error) {
 	r := &receiver{}
 
 	if timestamp == "" {
@@ -91,7 +93,7 @@ func (c *Crypto) Decrypt(sign, timestamp, nonce, body string) ([]byte, error) {
 		return nil, errors.New("签名不同")
 	}
 
-	if err := xml.Unmarshal([]byte(body), r); err != nil {
+	if err := xml.Unmarshal(body, r); err != nil {
 		return nil, err
 	}
 

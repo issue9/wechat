@@ -5,7 +5,9 @@
 package crypto
 
 import (
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/issue9/assert"
 	"github.com/issue9/rands"
@@ -29,6 +31,31 @@ func TestCrypto_encrypt_decrypt(t *testing.T) {
 	a.NotError(err).NotNil(text)
 
 	detext, err := c.decrypt(text)
+	a.NotError(err).NotNil(detext)
+
+	a.Equal(string(detext), msg)
+}
+
+func TestCrypto_Encrypt_Decrypt(t *testing.T) {
+	a := assert.New(t)
+	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, randstr))
+	a.NotError(err).NotNil(c)
+
+	msg := `<xml>
+	<ToUserName><![CDATA[示例内容]]></ToUserName>
+	<FromUserName><![CDATA[示例内容]]></FromUserName>
+	<CreateTime>1348831860</CreateTime>
+	<MsgType><![CDATA[示例内容]]></MsgType>
+	<Content><![CDATA[示例内容]]></Content>
+	<MsgId>1234567890123456</MsgId>
+	</xml>`
+
+	timesamp := strconv.FormatInt(time.Now().Unix(), 10)
+	nonce := nonceString()
+	text, sign, err := c.Encrypt([]byte(msg), timesamp, nonce)
+	a.NotError(err).NotNil(text)
+
+	detext, err := c.Decrypt(text, sign, timesamp, nonce)
 	a.NotError(err).NotNil(detext)
 
 	a.Equal(string(detext), msg)
