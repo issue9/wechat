@@ -8,11 +8,31 @@ package crypto
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/sha1"
 	"encoding/base64"
+	"encoding/hex"
+	"encoding/xml"
 	"errors"
+	"fmt"
+	"sort"
+	"strconv"
+	"time"
 
 	"github.com/issue9/wechat/common"
 )
+
+const messageFormat = `<xml>
+<Encrypt><![CDATA[%s]]></Encrypt>
+<MsgSignature><![CDATA[%s]]></MsgSignature>
+<TimeStamp>%s</TimeStamp>
+<Nonce><![CDATA[%s]]></Nonce>
+</xml>`
+
+type receiver struct {
+	Root       xml.Name `xml:"xml"`
+	ToUserName string   `xml:"ToUserName"`
+	Encrypt    string   `xml:"Encrypt"`
+}
 
 // Crypto 加解密功能
 type Crypto struct {
@@ -44,8 +64,42 @@ func New(appid, token, encodingAesKey string) (*Crypto, error) {
 	}, nil
 }
 
-// Encrypt 加密内容 AES_Encrypt[random(16B) + msg_len(4B) + rawXMLMsg + appId]
-func (c *Crypto) Encrypt(xmltext []byte) ([]byte, error) {
+// Encrypt 加密内容
+func (c *Crypto) Encrypt(xmltext []byte, timestamp, nonce string) ([]byte, error) {
+	entext, err := c.encrypt(xmltext)
+	if err != nil {
+		return nil, err
+	}
+
+	if timestamp == "" {
+		timestamp = strconv.FormatInt(time.Now().Unix(), 10)
+	}
+
+	sign := sha1Sign(c.token, timestamp, nonce)
+	return []byte(fmt.Sprintf(messageFormat, entext, sign, timestamp, nonce)), nil
+}
+
+// Decrypt 解密内容
+func (c *Crypto) Decrypt(sign, timestamp, nonce, body string) ([]byte, error) {
+	r := &receiver{}
+
+	if timestamp == "" {
+		timestamp = strconv.FormatInt(time.Now().Unix(), 10)
+	}
+
+	if sha1Sign(c.token, timestamp, nonce) != sign {
+		return nil, errors.New("签名不同")
+	}
+
+	if err := xml.Unmarshal([]byte(body), r); err != nil {
+		return nil, err
+	}
+
+	return c.decrypt([]byte(r.Encrypt))
+}
+
+// base64Encoding(AES_Encrypt[random(16B) + msg_len(4B) + rawXMLMsg + appId])
+func (c *Crypto) encrypt(xmltext []byte) ([]byte, error) {
 	text := make([]byte, 0, c.plainlen+len(xmltext))
 	text = append(text, nonce()...)
 	text = append(text, encodeNetworkByteOrder(uint32(len(xmltext)))...)
@@ -66,8 +120,7 @@ func (c *Crypto) Encrypt(xmltext []byte) ([]byte, error) {
 	return dst, nil
 }
 
-// Decrypt 解密内容
-func (c *Crypto) Decrypt(text []byte) ([]byte, error) {
+func (c *Crypto) decrypt(text []byte) ([]byte, error) {
 	dst := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
 	n, err := base64.StdEncoding.Decode(dst, text)
 	if err != nil {
@@ -84,7 +137,10 @@ func (c *Crypto) Decrypt(text []byte) ([]byte, error) {
 	plaintext := make([]byte, len(dst))
 	mode.CryptBlocks(plaintext, dst)
 
-	return common.PKCS7UnPadding(plaintext), nil
+	plaintext = common.PKCS7UnPadding(plaintext)
+
+	size := decodeNetworkByteOrder(plaintext[16:20])
+	return plaintext[20 : 20+int(size)], nil
 }
 
 // 编码成网络字节（大端）
@@ -105,4 +161,17 @@ func decodeNetworkByteOrder(b []byte) (n uint32) {
 		uint32(b[1])<<16 |
 		uint32(b[2])<<8 |
 		uint32(b[3])
+}
+
+func sha1Sign(token, timestamp, nonce string) (signature string) {
+	strs := sort.StringSlice{token, timestamp, nonce}
+	strs.Sort()
+
+	buf := make([]byte, 0, len(token)+len(timestamp)+len(nonce))
+	buf = append(buf, strs[0]...)
+	buf = append(buf, strs[1]...)
+	buf = append(buf, strs[2]...)
+
+	hashsum := sha1.Sum(buf)
+	return hex.EncodeToString(hashsum[:])
 }
