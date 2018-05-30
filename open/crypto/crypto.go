@@ -24,7 +24,9 @@ type Crypto struct {
 }
 
 // New 声明一个 Crypto 实例
-func New(appid []byte, token, encodingAesKey string) (*Crypto, error) {
+//
+// encodingAesKey 不需要结尾的 = 字符
+func New(appid, token, encodingAesKey string) (*Crypto, error) {
 	if len(encodingAesKey) != 43 {
 		return nil, errors.New("无效的参数 encodingAesKey")
 	}
@@ -36,7 +38,7 @@ func New(appid []byte, token, encodingAesKey string) (*Crypto, error) {
 
 	return &Crypto{
 		token:    token,
-		appid:    appid,
+		appid:    []byte(appid),
 		key:      key,
 		plainlen: 16 + 4 + len(appid),
 	}, nil
@@ -58,19 +60,29 @@ func (c *Crypto) Encrypt(xmltext []byte) ([]byte, error) {
 
 	mode := cipher.NewCBCEncrypter(block, c.key[:aes.BlockSize])
 	mode.CryptBlocks(text, text)
-	return text, nil
+
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(text)))
+	base64.StdEncoding.Encode(dst, text)
+	return dst, nil
 }
 
 // Decrypt 解密内容
 func (c *Crypto) Decrypt(text []byte) ([]byte, error) {
+	dst := make([]byte, base64.StdEncoding.DecodedLen(len(text)))
+	n, err := base64.StdEncoding.Decode(dst, text)
+	if err != nil {
+		return nil, err
+	}
+	dst = dst[:n]
+
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
 		return nil, err
 	}
 
 	mode := cipher.NewCBCDecrypter(block, c.key[:aes.BlockSize])
-	plaintext := make([]byte, len(text))
-	mode.CryptBlocks(plaintext, text)
+	plaintext := make([]byte, len(dst))
+	mode.CryptBlocks(plaintext, dst)
 
 	return common.PKCS7UnPadding(plaintext), nil
 }
