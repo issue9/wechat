@@ -34,6 +34,17 @@ type receiver struct {
 	Encrypt    string   `xml:"Encrypt"`
 }
 
+// Message 接收到消息
+type Message struct {
+	Root         xml.Name `xml:"xml"`
+	ToUserName   string   `xml:"ToUserName"`
+	FromUserName string   `xml:"FromUserName"`
+	CreateTime   string   `xml:"CreateTime"`
+	MsgType      string   `xml:"MsgType"`
+	Content      string   `xml:"Content"`
+	MsgID        string   `xml:"MsgId"`
+}
+
 // Crypto 加解密功能
 type Crypto struct {
 	token string
@@ -82,9 +93,7 @@ func (c *Crypto) Encrypt(xmltext []byte, timestamp, nonce string) ([]byte, strin
 }
 
 // Decrypt 解密 XML 内容
-func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) ([]byte, error) {
-	r := &receiver{}
-
+func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) (*Message, error) {
 	if timestamp == "" {
 		timestamp = strconv.FormatInt(time.Now().Unix(), 10)
 	}
@@ -93,11 +102,21 @@ func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) ([]byte, er
 		return nil, errors.New("签名不同")
 	}
 
+	r := &receiver{}
 	if err := xml.Unmarshal(body, r); err != nil {
 		return nil, err
 	}
 
-	return c.decrypt([]byte(r.Encrypt))
+	data, err := c.decrypt([]byte(r.Encrypt))
+	if err != nil {
+		return nil, err
+	}
+
+	msg := &Message{}
+	if err = xml.Unmarshal(data, msg); err != nil {
+		return nil, err
+	}
+	return msg, nil
 }
 
 // base64Encoding(AES_Encrypt[random(16B) + msg_len(4B) + rawXMLMsg + appId])

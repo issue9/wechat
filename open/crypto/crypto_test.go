@@ -55,8 +55,9 @@ func TestCrypto_Encrypt_Decrypt(t *testing.T) {
 	text, sign, err := c.Encrypt([]byte(msg), timesamp, nonce)
 	a.NotError(err).NotNil(text)
 
-	detext, err := c.Decrypt(text, sign, timesamp, nonce)
-	a.NotError(err).NotNil(detext)
-
-	a.Equal(string(detext), msg)
+	msgobj, err := c.Decrypt(text, sign, timesamp, nonce)
+	a.NotError(err).NotNil(msgobj)
+	a.Equal(msgobj.MsgID, "1234567890123456")
+	a.Equal(msgobj.CreateTime, "1348831860")
+	a.Equal(msgobj.Content, "示例内容")
 }
