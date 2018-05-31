@@ -34,17 +34,6 @@ type receiver struct {
 	Encrypt    string   `xml:"Encrypt"`
 }
 
-// Message 接收到消息
-type Message struct {
-	Root         xml.Name `xml:"xml"`
-	ToUserName   string   `xml:"ToUserName"`
-	FromUserName string   `xml:"FromUserName"`
-	CreateTime   string   `xml:"CreateTime"`
-	MsgType      string   `xml:"MsgType"`
-	Content      string   `xml:"Content"`
-	MsgID        string   `xml:"MsgId"`
-}
-
 // Crypto 加解密功能
 type Crypto struct {
 	token string
@@ -75,6 +64,16 @@ func New(appid, token, encodingAesKey string) (*Crypto, error) {
 	}, nil
 }
 
+// EncryptObject 将一个对象数据进行加密并发送
+func (c *Crypto) EncryptObject(xmlobj interface{}, timestamp, nonce string) ([]byte, string, error) {
+	data, err := xml.Marshal(xmlobj)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return c.Encrypt(data, timestamp, nonce)
+}
+
 // Encrypt 加密 XML 内容
 //
 // 返回加密后的 XML 结构体内容以及签名内容
@@ -92,8 +91,21 @@ func (c *Crypto) Encrypt(xmltext []byte, timestamp, nonce string) ([]byte, strin
 	return []byte(fmt.Sprintf(messageFormat, entext, sign, timestamp, nonce)), sign, nil
 }
 
+// DecryptObject 解密 XML 内容
+func (c *Crypto) DecryptObject(body []byte, sign, timestamp, nonce string, object interface{}) error {
+	data, err := c.Decrypt(body, sign, timestamp, nonce)
+	if err != nil {
+		return err
+	}
+
+	if err = xml.Unmarshal(data, object); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Decrypt 解密 XML 内容
-func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) (*Message, error) {
+func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) ([]byte, error) {
 	if timestamp == "" {
 		timestamp = strconv.FormatInt(time.Now().Unix(), 10)
 	}
@@ -107,16 +119,7 @@ func (c *Crypto) Decrypt(body []byte, sign, timestamp, nonce string) (*Message, 
 		return nil, err
 	}
 
-	data, err := c.decrypt([]byte(r.Encrypt))
-	if err != nil {
-		return nil, err
-	}
-
-	msg := &Message{}
-	if err = xml.Unmarshal(data, msg); err != nil {
-		return nil, err
-	}
-	return msg, nil
+	return c.decrypt([]byte(r.Encrypt))
 }
 
 // base64Encoding(AES_Encrypt[random(16B) + msg_len(4B) + rawXMLMsg + appId])

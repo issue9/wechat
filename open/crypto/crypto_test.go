@@ -5,6 +5,7 @@
 package crypto
 
 import (
+	"encoding/xml"
 	"strconv"
 	"testing"
 	"time"
@@ -12,6 +13,16 @@ import (
 	"github.com/issue9/assert"
 	"github.com/issue9/rands"
 )
+
+type message struct {
+	Root         xml.Name `xml:"xml"`
+	ToUserName   string   `xml:"ToUserName"`
+	FromUserName string   `xml:"FromUserName"`
+	CreateTime   string   `xml:"CreateTime"`
+	MsgType      string   `xml:"MsgType"`
+	Content      string   `xml:"Content"`
+	MsgID        string   `xml:"MsgId"`
+}
 
 func TestCrypto_encrypt_decrypt(t *testing.T) {
 	a := assert.New(t)
@@ -36,28 +47,28 @@ func TestCrypto_encrypt_decrypt(t *testing.T) {
 	a.Equal(string(detext), msg)
 }
 
-func TestCrypto_Encrypt_Decrypt(t *testing.T) {
+func TestCrypto_Encrypt_DecryptObject(t *testing.T) {
 	a := assert.New(t)
 	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, randstr))
 	a.NotError(err).NotNil(c)
 
-	msg := `<xml>
-	<ToUserName><![CDATA[示例内容]]></ToUserName>
-	<FromUserName><![CDATA[示例内容]]></FromUserName>
-	<CreateTime>1348831860</CreateTime>
-	<MsgType><![CDATA[示例内容]]></MsgType>
-	<Content><![CDATA[示例内容]]></Content>
-	<MsgId>1234567890123456</MsgId>
-	</xml>`
-
 	timesamp := strconv.FormatInt(time.Now().Unix(), 10)
 	nonce := nonceString()
-	text, sign, err := c.Encrypt([]byte(msg), timesamp, nonce)
+
+	// encryptObject
+	obj := &message{
+		MsgID:      "1234567890123456",
+		CreateTime: "1348831860",
+		Content:    "示例内容",
+	}
+	text, sign, err := c.EncryptObject(obj, timesamp, nonce)
 	a.NotError(err).NotNil(text)
 
-	msgobj, err := c.Decrypt(text, sign, timesamp, nonce)
-	a.NotError(err).NotNil(msgobj)
-	a.Equal(msgobj.MsgID, "1234567890123456")
-	a.Equal(msgobj.CreateTime, "1348831860")
-	a.Equal(msgobj.Content, "示例内容")
+	// decryptObject
+	msgobj := &message{}
+	a.NotError(c.DecryptObject(text, sign, timesamp, nonce, msgobj))
+
+	a.Equal(msgobj.MsgID, obj.MsgID)
+	a.Equal(msgobj.CreateTime, obj.CreateTime)
+	a.Equal(msgobj.Content, obj.Content)
 }
