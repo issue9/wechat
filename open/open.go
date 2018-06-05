@@ -60,7 +60,7 @@ func ParseVerifyTicket(c *crypto.Crypto, w http.ResponseWriter, r *http.Request)
 	defer r.Body.Close()
 
 	ticket := &VerifyTicket{}
-	sign := r.FormValue("msg_signature")
+	sign := r.FormValue("signature")
 	timestamp := r.FormValue("timestamp")
 	nonce := r.FormValue("nonce")
 	if err = c.DecryptObject(data, sign, timestamp, nonce, ticket); err != nil {
