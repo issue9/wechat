@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/issue9/wechat/mp/common/result"
 )
@@ -25,6 +26,8 @@ type Response struct {
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
 	UnionID    string `json:"unionid,omitempty"` // 某些情况下存在
+
+	created time.Time
 }
 
 // Authorization 执行登录验证，并获取相应的数据
