@@ -61,6 +61,8 @@ func (p *Pay) APIKey() string {
 }
 
 // NewTLSPay 声明一个带证书的支付实例
+//
+// 如果想要用系统的根证书，则将 rootCAPath 置为空就行。
 func NewTLSPay(mchid, appid, apikey, certPath, keyPath, rootCAPath string) (*Pay, error) {
 	client, err := newTLSClient(certPath, keyPath, rootCAPath)
 	if err != nil {
@@ -249,12 +251,14 @@ func newTLSClient(cert, key, root string) (*http.Client, error) {
 		return nil, err
 	}
 
-	pool := x509.NewCertPool()
-	pool.AppendCertsFromPEM(r)
-
 	conf := &tls.Config{
 		Certificates: []tls.Certificate{c},
-		RootCAs:      pool,
+	}
+
+	if root != "" {
+		pool := x509.NewCertPool()
+		pool.AppendCertsFromPEM(r)
+		conf.RootCAs = pool
 	}
 
 	return &http.Client{
