@@ -2,23 +2,23 @@
 // Use of this source code is governed by a MIT
 // license that can be found in the LICENSE file.
 
-// Package weapp 小程序的相关操作
-package weapp
+// Package auth 小程序登录验证的相关操作
+package auth
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"time"
 
+	"github.com/issue9/wechat/mp/common/config"
 	"github.com/issue9/wechat/mp/common/result"
 )
 
+// TODO 采用 mp/common/config 包的配置
+
 const (
 	grantType = "authorization_code"
-
-	loginURL = "https://api.weixin.qq.com/sns/jscode2session"
 )
 
 // Response 返回的数据
@@ -31,16 +31,15 @@ type Response struct {
 }
 
 // Authorization 执行登录验证，并获取相应的数据
-func Authorization(appid, secret, jscode string) (*Response, error) {
-	vals := url.Values{}
-	vals.Set("grant_type", grantType)
-	vals.Set("appid", appid)
-	vals.Set("secret", secret)
-	vals.Set("js_code", jscode)
+func Authorization(conf *config.Config, jscode string) (*Response, error) {
+	queries := map[string]string{
+		"grant_type": grantType,
+		"appid":      conf.AppID,
+		"secret":     conf.AppSecret,
+		"js_code":    jscode,
+	}
 
-	url := loginURL + "?" + vals.Encode()
-
-	resp, err := http.Get(url)
+	resp, err := http.Get(conf.URL("sns/jscode2session", queries))
 	if err != nil {
 		return nil, err
 	}

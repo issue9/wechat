@@ -80,8 +80,11 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 	if err := p.map2XML(params, buf); err != nil {
 		return nil, err
 	}
+
+	fmt.Println("url:", url, buf.String())
 	resp, err := p.client.Post(url, "application/xml", buf)
 	if err != nil {
+		fmt.Println("post error:", err)
 		return nil, err
 	}
 	if resp.StatusCode > 399 {

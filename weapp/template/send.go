@@ -15,16 +15,18 @@ import (
 )
 
 // Send 发送模板信息
-func Send(srv token.Server, to, id, url string, data Data) error {
+func Send(srv token.Server, to, tplid, page, formid string, data Data) error {
 	obj := &struct {
 		To   string        `json:"touser"`
 		ID   string        `json:"template_id"`
-		URL  string        `json:"url"`
+		Page string        `json:"page"`
+		Form string        `json:"form_id"`
 		Data map[string]KV `json:"data"`
 	}{
 		To:   to,
-		ID:   id,
-		URL:  url,
+		ID:   tplid,
+		Page: to,
+		Form: formid,
 		Data: data,
 	}
 
@@ -35,7 +37,7 @@ func Send(srv token.Server, to, id, url string, data Data) error {
 
 	/* 处理返回的信息 */
 
-	url = token.URL(srv, "cgi-bin/message/template/send", nil)
+	url := token.URL(srv, "cgi-bin/message/wxopen/template/send", nil)
 	resp, err := http.Post(url, "application/json", bytes.NewReader(bs))
 	if err != nil {
 		return err

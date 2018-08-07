@@ -6,6 +6,11 @@ package template
 
 import "github.com/issue9/wechat/mp/common/result"
 
+type limit struct {
+	Offset int `json:"offset"`
+	Count  int `json:"count"`
+}
+
 // Result 表示消息推送之后的数据
 type Result struct {
 	result.Result

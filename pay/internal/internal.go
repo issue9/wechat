@@ -34,7 +34,7 @@ func MapFromXMLReader(r io.Reader) (map[string]string, error) {
 		}
 
 		token, err = d.Token()
-		if err != nil { // 此处或是 io.EOF，也是属于非正常结束
+		if err != nil { // 此处若是 io.EOF，也是属于非正常结束
 			return nil, err
 		}
 		bs, ok := token.(xml.CharData)

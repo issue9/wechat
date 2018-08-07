@@ -83,7 +83,8 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 	if err != nil {
 		return nil, err
 	}
-	ret.end = end.Add(-pay.TimeFixed) // 返回的为区八区，需要减去，才是 UTC
+	//ret.end = end.Add(-pay.TimeFixed) // 返回的为区八区，需要减去，才是 UTC
+	ret.end = end
 
 	return ret, nil
 }
