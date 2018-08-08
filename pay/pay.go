@@ -33,6 +33,8 @@ type Pay struct {
 }
 
 // New 声明一个新的 *Pay 实例
+//
+// client 若为空，则采用 http.DefaultClient
 func New(mchid, appid, apikey string, client *http.Client) *Pay {
 	if client == nil {
 		client = http.DefaultClient
@@ -81,10 +83,14 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 		return nil, err
 	}
 
-	fmt.Println("url:", url, buf.String())
-	resp, err := p.client.Post(url, "application/xml", buf)
+	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
-		fmt.Println("post error:", err)
+		return nil, err
+	}
+	req.Header.Set("Content-type", "application/xml; charset=utf-8")
+	req.Close = true
+	resp, err := p.client.Do(req)
+	if err != nil {
 		return nil, err
 	}
 	if resp.StatusCode > 399 {
@@ -249,16 +255,15 @@ func newTLSClient(cert, key, root string) (*http.Client, error) {
 		return nil, err
 	}
 
-	r, err := ioutil.ReadFile(root)
-	if err != nil {
-		return nil, err
-	}
-
 	conf := &tls.Config{
 		Certificates: []tls.Certificate{c},
 	}
 
 	if root != "" {
+		r, err := ioutil.ReadFile(root)
+		if err != nil {
+			return nil, err
+		}
 		pool := x509.NewCertPool()
 		pool.AppendCertsFromPEM(r)
 		conf.RootCAs = pool

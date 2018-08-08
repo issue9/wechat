@@ -23,6 +23,7 @@ const (
 
 // Response 返回的数据
 type Response struct {
+	result.Result
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
 	UnionID    string `json:"unionid,omitempty"` // 某些情况下存在
@@ -55,9 +56,5 @@ func Authorization(conf *config.Config, jscode string) (*Response, error) {
 		return data, nil
 	}
 
-	rslt := &result.Result{}
-	if err := json.Unmarshal(bs, rslt); err != nil {
-		return nil, err
-	}
-	return nil, rslt
+	return nil, &data.Result
 }
