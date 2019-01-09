@@ -18,14 +18,10 @@ import (
 	"github.com/issue9/rands"
 )
 
-var (
-	// 函数可用的字符
-	nonceStringChars = []byte("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	randSrv          *rands.Rands
-)
+var randSrv *rands.Rands
 
 func init() {
-	srv, err := rands.New(time.Now().Unix(), 100, 24, 32, nonceStringChars)
+	srv, err := rands.New(time.Now().Unix(), 100, 24, 32, rands.AlphaNumber)
 	if err != nil {
 		panic(err)
 	}
