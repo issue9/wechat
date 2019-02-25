@@ -17,7 +17,7 @@ func TestToken_IsExpired(t *testing.T) {
 	a := assert.New(t)
 
 	token := &AccessToken{
-		ExpiresIn: 7200,
+		ExpiresIn: 7200 * time.Second,
 		Created:   time.Now(),
 	}
 	a.False(token.IsExpired())
