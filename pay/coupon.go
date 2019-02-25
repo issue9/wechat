@@ -5,6 +5,7 @@
 package pay
 
 import (
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -18,8 +19,9 @@ type Coupon struct {
 
 // GetCoupons 从 params 获取所有的代金券信息
 func GetCoupons(params map[string]string) ([]*Coupon, error) {
-	coupons := []*Coupon{}
+	coupons := map[int]*Coupon{}
 
+LOOP:
 	for name, val := range params {
 		switch {
 		case strings.HasPrefix(name, "coupon_id_"):
@@ -33,26 +35,28 @@ func GetCoupons(params map[string]string) ([]*Coupon, error) {
 				return nil, err
 			}
 
-			if index >= len(coupons) { // 不存在
-				coupons = append(coupons, &Coupon{
+			c, found := coupons[index]
+			if !found { // 不存在
+				coupons[index] = &Coupon{
 					ID: id,
-				})
-				break
+				}
+				continue LOOP
 			}
-			coupons[index].ID = id
+			c.ID = id
 		case strings.HasPrefix(name, "coupon_type_"):
 			index, err := getCouponIndex(name, "coupon_type_")
 			if err != nil {
 				return nil, err
 			}
 
-			if index >= len(coupons) { // 不存在
-				coupons = append(coupons, &Coupon{
+			c, found := coupons[index]
+			if !found { // 不存在
+				coupons[index] = &Coupon{
 					Type: val,
-				})
-				break
+				}
+				continue LOOP
 			}
-			coupons[index].Type = val
+			c.Type = val
 		case strings.HasPrefix(name, "coupon_fee_"):
 			index, err := getCouponIndex(name, "coupon_fee_")
 			if err != nil {
@@ -64,17 +68,27 @@ func GetCoupons(params map[string]string) ([]*Coupon, error) {
 				return nil, err
 			}
 
-			if index >= len(coupons) { // 不存在
-				coupons = append(coupons, &Coupon{
+			c, found := coupons[index]
+			if !found { // 不存在
+				coupons[index] = &Coupon{
 					Fee: fee,
-				})
-				break
+				}
+				continue LOOP
 			}
-			coupons[index].Fee = fee
+			c.Fee = fee
 		} // ned switch
 	} // end for
 
-	return coupons, nil
+	ret := make([]*Coupon, 0, len(coupons))
+	for _, c := range coupons {
+		ret = append(ret, c)
+	}
+
+	sort.SliceStable(ret, func(i, j int) bool {
+		return ret[i].ID < ret[j].ID
+	})
+
+	return ret, nil
 }
 
 // 获取代金券的索引值，比如从 coupon_type_1 获取 1
