@@ -10,6 +10,7 @@ import (
 	"github.com/issue9/wechat/common"
 )
 
+// ReplySuccess 成功返回的内容
 var ReplySuccess = []byte("success")
 
 // ReplyTransferCustomerService 转发消息
@@ -24,13 +25,14 @@ type ReplyTransferCustomerService struct {
 // NewReplyTranferCustomerService 将所有的消息进行转发
 func NewReplyTranferCustomerService(m Messager) *ReplyTransferCustomerService {
 	return &ReplyTransferCustomerService{
-		ToUserName:   common.CData{m.From()},
-		FromUserName: common.CData{m.To()},
-		MsgType:      common.CData{TypeTransferCustomerService},
+		ToUserName:   common.CData{Text: m.From()},
+		FromUserName: common.CData{Text: m.To()},
+		MsgType:      common.CData{Text: TypeTransferCustomerService},
 		CreateTime:   m.Created(),
 	}
 }
 
+// Bytes 返回 []byte 内容
 func (t *ReplyTransferCustomerService) Bytes() ([]byte, error) {
 	return xml.Marshal(t)
 }
