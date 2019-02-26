@@ -1,6 +1,5 @@
 wechat
 [![Build Status](https://travis-ci.org/issue9/wechat.svg?branch=master)](https://travis-ci.org/issue9/wechat)
-[![Build status](https://ci.appveyor.com/api/projects/status/1awbdf5bvsqxpbio?svg=true)](https://ci.appveyor.com/project/caixw/wechat)
 [![codecov](https://codecov.io/gh/issue9/wechat/branch/master/graph/badge.svg)](https://codecov.io/gh/issue9/wechat)
 
 微信接口，测试中，勿用！

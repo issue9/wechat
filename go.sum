@@ -1,6 +1,6 @@
 github.com/issue9/assert v1.1.0 h1:vRl4oP7O7EfYpfXwVfC7kjo7cwzs+NsiAJDg1oyU2Fk=
 github.com/issue9/assert v1.1.0/go.mod h1:KLwR3U/5rbCxqwAnV3aCr+dz07aoIyIfk2lefIVr2BA=
-github.com/issue9/assert v1.2.1 h1:Dig9KsrrSvUSh0B7HiwjpmqGtoXdmhY7WTJENirIMSU=
-github.com/issue9/assert v1.2.1/go.mod h1:KLwR3U/5rbCxqwAnV3aCr+dz07aoIyIfk2lefIVr2BA=
+github.com/issue9/assert v1.3.0 h1:i+B7WjAkbiTkSgdiixGANJxF5d6ookUbTKHzMHmlO4k=
+github.com/issue9/assert v1.3.0/go.mod h1:DrFAjyZGTxsbQE6JRmC22w26yhVlnhOsf7tWucHq28w=
 github.com/issue9/rands v1.1.1 h1:LN2oLhExq5MqK5bqIzZu18k26QK3eQIWBw3Cbm8fhq4=
 github.com/issue9/rands v1.1.1/go.mod h1:+34JYQL1EcxK79SFD3wOJklufb2967Tl9iom5jE1LF4=
