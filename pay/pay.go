@@ -5,15 +5,16 @@
 package pay
 
 import (
-	"bytes"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/issue9/errwrap"
 	"github.com/issue9/wechat/pay/internal"
 )
 
@@ -78,12 +79,12 @@ func NewTLSPay(mchid, appid, apikey, certPath, keyPath, rootCAPath string) (*Pay
 // 比如：若已经指定了 appid，会不会使用 pay.AppID；
 // 若使用了 sign，则不会再计算 sign 值。
 func (p *Pay) Post(url string, params map[string]string) (map[string]string, error) {
-	buf := new(bytes.Buffer)
-	if err := p.map2XML(params, buf); err != nil {
+	r, err := p.map2XML(params)
+	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, url, buf)
+	req, err := http.NewRequest(http.MethodPost, url, r)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +205,7 @@ func (p *Pay) Sign(signType string, params map[string]string) (string, error) {
 }
 
 // 将 map 转换成 xml，并写入到 buf
-func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
+func (p *Pay) map2XML(params map[string]string) (io.Reader, error) {
 	if params["appid"] == "" {
 		params["appid"] = p.appID
 	}
@@ -220,32 +221,32 @@ func (p *Pay) map2XML(params map[string]string, buf *bytes.Buffer) error {
 	if params["sign"] == "" {
 		sign, err := p.Sign(params["sign_type"], params)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		params["sign"] = sign
 	}
 
-	buf.WriteString("<xml>")
+	var buf errwrap.Buffer
+	buf.WString("<xml>")
 	for k, v := range params {
 		if v == "" {
 			continue
 		}
 
-		buf.WriteByte('<')
-		buf.WriteString(k)
-		buf.WriteByte('>')
+		buf.WByte('<').WString(k).WByte('>')
 
-		if err := xml.EscapeText(buf, []byte(v)); err != nil {
-			return err
+		if err := xml.EscapeText(&buf, []byte(v)); err != nil {
+			return nil, err
 		}
 
-		buf.WriteString("</")
-		buf.WriteString(k)
-		buf.WriteByte('>')
+		buf.WString("</").WString(k).WByte('>')
 	}
-	buf.WriteString("</xml>")
+	buf.WString("</xml>")
 
-	return nil
+	if buf.Err != nil {
+		return nil, buf.Err
+	}
+	return &buf.Buffer, nil
 }
 
 // 获取一个带安全证书的 http.Client 实例

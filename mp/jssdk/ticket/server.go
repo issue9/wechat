@@ -5,7 +5,6 @@
 package ticket
 
 import (
-	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"log"
@@ -14,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/issue9/errwrap"
 
 	"github.com/issue9/wechat/mp/common/token"
 	"github.com/issue9/wechat/pay"
@@ -127,19 +128,19 @@ func sign(params map[string]string) (string, error) {
 	sort.Strings(keys)
 
 	/* 拼接字符串 */
-	buf := new(bytes.Buffer)
+	var buf errwrap.Buffer
 	for _, k := range keys {
 		v := params[k]
 		if len(v) == 0 {
 			continue
 		}
 
-		buf.WriteString(k)
-		buf.WriteByte('=')
-		buf.WriteString(v)
-		buf.WriteByte('&')
+		buf.WString(k).WByte('=').WString(v).WByte('&')
 	}
 	buf.Truncate(buf.Len() - 1) // 去掉最后的 &
+	if buf.Err != nil {
+		return "", buf.Err
+	}
 
 	h := sha1.New()
 	h.Write(buf.Bytes())

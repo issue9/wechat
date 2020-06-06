@@ -6,7 +6,6 @@
 package pay
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -15,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/issue9/errwrap"
 	"github.com/issue9/rands"
 )
 
@@ -52,20 +52,19 @@ func Sign(apikey, signType string, params map[string]string) (string, error) {
 	sort.Strings(keys)
 
 	/* 拼接字符串 */
-	buf := new(bytes.Buffer)
+	var buf errwrap.Buffer
 	for _, k := range keys {
 		v := params[k]
 		if len(v) == 0 {
 			continue
 		}
 
-		buf.WriteString(k)
-		buf.WriteByte('=')
-		buf.WriteString(v)
-		buf.WriteByte('&')
+		buf.WString(k).WByte('=').WString(v).WByte('&')
 	}
-	buf.WriteString("key=")
-	buf.WriteString(apikey)
+	buf.WString("key=").WString(apikey)
+	if buf.Err != nil {
+		return "", buf.Err
+	}
 
 	var h hash.Hash
 	switch signType {
