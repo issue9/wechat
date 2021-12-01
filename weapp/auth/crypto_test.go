@@ -7,11 +7,11 @@ package auth
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestDecode(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	appid := "wx4f4bc4dec97d474b"
 	sessionKey := "tiihtNczf5v6AKRyjwEUhQ=="

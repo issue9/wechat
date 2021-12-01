@@ -8,7 +8,7 @@ import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 type CDataTester struct {
@@ -17,7 +17,7 @@ type CDataTester struct {
 }
 
 func TestMarshalCData(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	obj := &CDataTester{
 		Data1: CData{"abc<def"},
@@ -29,7 +29,7 @@ func TestMarshalCData(t *testing.T) {
 }
 
 func TestUnmarshalCData(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	data := []byte(`
 	<xml>

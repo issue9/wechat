@@ -8,12 +8,12 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 	"github.com/issue9/wechat/mp/common/result"
 )
 
 func TestParseAccessToken(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := bytes.NewReader([]byte(`{"errcode":40001,"errmsg":"error msg"}`))
 	at, err := parseAccessToken(r)

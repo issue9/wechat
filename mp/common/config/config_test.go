@@ -7,18 +7,18 @@ package config
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestNew(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	conf, err := New("appid", "appsecret", "")
 	a.NotError(err).Equal(conf.Host, "api.weixin.qq.com")
 }
 
 func TestConfig_URL(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	conf := &Config{
 		AppID:     "appid",

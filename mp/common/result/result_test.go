@@ -9,13 +9,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 var _ error = &Result{}
 
 func TestNew(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	// HTTP 错误代码
 	r := New(http.StatusBadRequest)
@@ -31,7 +31,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestFrom(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := From([]byte("d"))
 	a.Equal(r.Code, 600)
@@ -44,7 +44,7 @@ func TestFrom(t *testing.T) {
 }
 
 func TestResult_IsOK(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := New(0)
 	a.True(r.IsOK())

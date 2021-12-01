@@ -18,16 +18,7 @@ import (
 	"github.com/issue9/rands"
 )
 
-var randSrv *rands.Rands
-
-func init() {
-	srv, err := rands.New(time.Now().Unix(), 100, 24, 32, rands.AlphaNumber)
-	if err != nil {
-		panic(err)
-	}
-
-	randSrv = srv
-}
+var randSrv = rands.New(time.Now().Unix(), 100, 24, 32, rands.AlphaNumber)
 
 // NonceString 产生一段随机字符串
 func NonceString() string {

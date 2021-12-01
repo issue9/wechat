@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 	"github.com/issue9/rands"
 )
 
@@ -25,7 +25,7 @@ type message struct {
 }
 
 func TestCrypto_encrypt_decrypt(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, randstr))
 	a.NotError(err).NotNil(c)
 
@@ -48,7 +48,7 @@ func TestCrypto_encrypt_decrypt(t *testing.T) {
 }
 
 func TestCrypto_Encrypt_DecryptObject(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, randstr))
 	a.NotError(err).NotNil(c)
 

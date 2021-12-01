@@ -7,11 +7,11 @@ package pay
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestGetCouponIndex(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	test := func(name, prefix string, wont int) {
 		num, err := getCouponIndex(name, prefix)
@@ -26,7 +26,7 @@ func TestGetCouponIndex(t *testing.T) {
 }
 
 func TestGetCoupons(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 	maps := map[string]string{
 		"coupon_id_0":   "0",
 		"coupon_type_0": "cash",

@@ -8,11 +8,11 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestMapFromReader(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	buf := bytes.NewBufferString(`<xml>
 	<appid>1234567</appid>
@@ -26,7 +26,7 @@ func TestMapFromReader(t *testing.T) {
 }
 
 func TestMap2XMLObj(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	maps := map[string]string{
 		"appid":      "12345",

@@ -8,12 +8,12 @@ import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 	"github.com/issue9/wechat/common"
 )
 
 func TestResponse(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 	str := `<xml><return_code><![CDATA[code]]></return_code><return_msg><![CDATA[msg]]></return_msg></xml>`
 
 	resp := &Response{

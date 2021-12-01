@@ -7,7 +7,7 @@ package message
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 var _ Eventer = &event{}
@@ -16,7 +16,7 @@ var _ Eventer = &EventLocation{}
 var _ Eventer = &EventClickView{}
 
 func TestGetEventType(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	data := []byte(`<xml>
 	<ToUserName><![CDATA[12d]]></ToUserName>
@@ -31,7 +31,7 @@ func TestGetEventType(t *testing.T) {
 }
 
 func TestGetEventObj(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	// subscribe
 	data := []byte(`<xml>

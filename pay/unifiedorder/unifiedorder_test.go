@@ -7,11 +7,11 @@ package unifiedorder
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestOrder_limitPay(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	o := &Order{}
 	a.Equal(o.limitPay(), limitPayNoCredit)
@@ -21,7 +21,7 @@ func TestOrder_limitPay(t *testing.T) {
 }
 
 func TestOrder_totalFee(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	o := &Order{
 		TotalFee: 500,

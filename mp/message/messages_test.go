@@ -7,7 +7,7 @@ package message
 import (
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 var _ Message = &Text{}
@@ -20,7 +20,7 @@ var _ Message = &Link{}
 var _ Message = &message{}
 
 func TestGetMsgType(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	data := []byte(`<xml>
 	<ToUserName><![CDATA[12d]]></ToUserName>
@@ -34,7 +34,7 @@ func TestGetMsgType(t *testing.T) {
 }
 
 func TestGetMessageObj(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	data := []byte(`<xml>
 	<ToUserName><![CDATA[12d]]></ToUserName>

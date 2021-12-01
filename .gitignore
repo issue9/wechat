@@ -25,3 +25,5 @@ _testmain.go
 
 .DS_Store
 *.swp
+.vscode/
+.idea/

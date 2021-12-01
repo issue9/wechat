@@ -8,11 +8,11 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 )
 
 func TestGetObj(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	data := []byte(`<xml>
 	<MsgType>event</MsgType>

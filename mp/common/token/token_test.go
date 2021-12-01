@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/issue9/assert"
+	"github.com/issue9/assert/v2"
 	"github.com/issue9/wechat/mp/common/result"
 )
 
 func TestToken_IsExpired(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	token := &AccessToken{
 		ExpiresIn: 7200 * time.Second,
@@ -28,7 +28,7 @@ func TestToken_IsExpired(t *testing.T) {
 }
 
 func TestParseAccessToken(t *testing.T) {
-	a := assert.New(t)
+	a := assert.New(t, false)
 
 	r := bytes.NewReader([]byte(`{"errcode":40001,"errmsg":"error msg"}`))
 	at, err := parseAccessToken(r)
