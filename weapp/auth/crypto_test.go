@@ -7,7 +7,7 @@ package auth
 import (
 	"testing"
 
-	"github.com/issue9/assert/v2"
+	"github.com/issue9/assert/v3"
 )
 
 func TestDecode(t *testing.T) {

@@ -7,7 +7,7 @@ package unifiedorder
 import (
 	"testing"
 
-	"github.com/issue9/assert/v2"
+	"github.com/issue9/assert/v3"
 )
 
 func TestOrder_limitPay(t *testing.T) {
