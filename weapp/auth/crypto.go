@@ -1,6 +1,6 @@
-// Copyright 2017 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package auth
 
@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/issue9/wechat/common"
+	"github.com/issue9/wechat/internal"
 )
 
 // 几个错误信息
@@ -64,7 +64,7 @@ func Decode(appid, sessionkey, data, iv string) ([]byte, *Watermark, error) {
 	mode := cipher.NewCBCDecrypter(block, aesiv)
 	mode.CryptBlocks(cipherText, cipherText)
 
-	cipherText = common.PKCS7UnPadding(cipherText)
+	cipherText = internal.PKCS7UnPadding(cipherText)
 	obj := &encyData{}
 	if err = json.Unmarshal(cipherText, obj); err != nil {
 		return nil, nil, err

@@ -6,7 +6,7 @@ wechat
 
 
 
-### 目录结构
+## 目录结构
 
 ```
 +---- common
@@ -25,15 +25,19 @@ wechat
 |     |
 |     +----- template 模板功能
 |     |
-|     +----- weapp 小程序相关功能
-|     |
 |     +----- jssdk jssdk 相关的功能
 |
 +---- pay 支付接口
-      |
-      +--- unifiedorder 统一支付接口
-      |
-      +--- refund 退款接口
-      |
-      +--- notify 支付通知接口
+|     |
+|     +--- unifiedorder 统一支付接口
+|     |
+|     +--- refund 退款接口
+|     |
+|     +--- notify 支付通知接口
+|
+|---- weapp 小程序相关功能
+|     |
+|     +--- auth 验证
+|     |
+|     +--- template 模板
 ```

@@ -1,6 +1,6 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package internal
 
@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/issue9/assert/v3"
+	"github.com/issue9/assert/v4"
 )
 
 func TestMapFromReader(t *testing.T) {

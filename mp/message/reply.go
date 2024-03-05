@@ -1,13 +1,13 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package message
 
 import (
 	"encoding/xml"
 
-	"github.com/issue9/wechat/common"
+	"github.com/issue9/wechat/internal"
 )
 
 // ReplySuccess 成功返回的内容
@@ -15,19 +15,19 @@ var ReplySuccess = []byte("success")
 
 // ReplyTransferCustomerService 转发消息
 type ReplyTransferCustomerService struct {
-	XMLName      xml.Name     `xml:"xml"`
-	ToUserName   common.CData `xml:"ToUserName"`   // 开发者微信号
-	FromUserName common.CData `xml:"FromUserName"` // 发送方帐号（一个 OpenID）
-	MsgType      common.CData `xml:"MsgType"`      // 消息类型
-	CreateTime   int64        `xml:"CreateTime"`   // 消息创建时间 （整型）
+	XMLName      xml.Name       `xml:"xml"`
+	ToUserName   internal.CData `xml:"ToUserName"`   // 开发者微信号
+	FromUserName internal.CData `xml:"FromUserName"` // 发送方帐号（一个 OpenID）
+	MsgType      internal.CData `xml:"MsgType"`      // 消息类型
+	CreateTime   int64          `xml:"CreateTime"`   // 消息创建时间 （整型）
 }
 
 // NewReplyTranferCustomerService 将所有的消息进行转发
 func NewReplyTranferCustomerService(m Messager) *ReplyTransferCustomerService {
 	return &ReplyTransferCustomerService{
-		ToUserName:   common.CData{Text: m.From()},
-		FromUserName: common.CData{Text: m.To()},
-		MsgType:      common.CData{Text: TypeTransferCustomerService},
+		ToUserName:   internal.CData{Text: m.From()},
+		FromUserName: internal.CData{Text: m.To()},
+		MsgType:      internal.CData{Text: TypeTransferCustomerService},
 		CreateTime:   m.Created(),
 	}
 }

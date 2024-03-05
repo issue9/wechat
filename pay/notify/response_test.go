@@ -1,6 +1,6 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package notify
 
@@ -8,8 +8,8 @@ import (
 	"encoding/xml"
 	"testing"
 
-	"github.com/issue9/assert/v3"
-	"github.com/issue9/wechat/common"
+	"github.com/issue9/assert/v4"
+	"github.com/issue9/wechat/internal"
 )
 
 func TestResponse(t *testing.T) {
@@ -17,8 +17,8 @@ func TestResponse(t *testing.T) {
 	str := `<xml><return_code><![CDATA[code]]></return_code><return_msg><![CDATA[msg]]></return_msg></xml>`
 
 	resp := &Response{
-		Code:    common.CData{Text: "code"},
-		Message: common.CData{Text: "msg"},
+		Code:    internal.CData{Text: "code"},
+		Message: internal.CData{Text: "msg"},
 	}
 	data, err := xml.Marshal(resp)
 	a.NotError(err).Equal(string(data), str)

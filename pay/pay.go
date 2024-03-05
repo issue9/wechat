@@ -1,7 +1,8 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
+// Package pay 微信支付的相关接口
 package pay
 
 import (
@@ -11,8 +12,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/issue9/errwrap"
 	"github.com/issue9/wechat/pay/internal"
@@ -261,7 +262,7 @@ func newTLSClient(cert, key, root string) (*http.Client, error) {
 	}
 
 	if root != "" {
-		r, err := ioutil.ReadFile(root)
+		r, err := os.ReadFile(root)
 		if err != nil {
 			return nil, err
 		}

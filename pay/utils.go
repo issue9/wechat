@@ -1,8 +1,7 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
-// Package pay 微信支付的相关接口
 package pay
 
 import (
@@ -12,17 +11,14 @@ import (
 	"hash"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/issue9/errwrap"
-	"github.com/issue9/rands"
+	"github.com/issue9/rands/v2"
 )
-
-var randSrv = rands.New(time.Now().Unix(), 100, 24, 32, rands.AlphaNumber)
 
 // NonceString 产生一段随机字符串
 func NonceString() string {
-	return randSrv.String()
+	return string(rands.Bytes(24, 32, rands.AlphaNumber()))
 }
 
 // Sign 微信支付签名

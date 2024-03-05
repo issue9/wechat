@@ -1,6 +1,6 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package message
 
@@ -10,7 +10,7 @@ import (
 )
 
 // Handler 消息处理函数。
-//通过向 NewServer 注册 Handler 函数，获取对消息处理的权限。
+// 通过向 NewServer 注册 Handler 函数，获取对消息处理的权限。
 //
 // 参数 Messager 为从微信端传递过来的 xml 数据对象实例，都已定义在 messages.go
 // 文件中。
@@ -23,10 +23,10 @@ type Handler func(Messager) ([]byte, error)
 
 // HandlerBus 为 Handler 接口的管理器，方便用户按类别来注册消息处理。
 //
-//  h := &HandlerBus{}
-//  h.RegisterMessage(TypeText, h1)
-//  h.RegisterMessage(TypeImage, h2)
-//  srv := NewServer("token", h.Handler, nil)
+//	h := &HandlerBus{}
+//	h.RegisterMessage(TypeText, h1)
+//	h.RegisterMessage(TypeImage, h2)
+//	srv := NewServer("token", h.Handler, nil)
 type HandlerBus struct {
 	messageHandlers map[string]Handler
 	eventHandlers   map[string]Handler

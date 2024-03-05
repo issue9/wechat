@@ -1,6 +1,6 @@
-// Copyright 2018 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 // Package crypto 消息的加解密功能
 package crypto
@@ -18,7 +18,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/issue9/wechat/common"
+	"github.com/issue9/wechat/internal"
 )
 
 const messageFormat = `<xml>
@@ -129,7 +129,7 @@ func (c *Crypto) encrypt(xmltext []byte) ([]byte, error) {
 	text = append(text, encodeNetworkByteOrder(uint32(len(xmltext)))...)
 	text = append(text, xmltext...)
 	text = append(text, c.appid...)
-	text = common.PKCS7Padding(text, aes.BlockSize)
+	text = internal.PKCS7Padding(text, aes.BlockSize)
 
 	block, err := aes.NewCipher(c.key)
 	if err != nil {
@@ -161,7 +161,7 @@ func (c *Crypto) decrypt(text []byte) ([]byte, error) {
 	plaintext := make([]byte, len(dst))
 	mode.CryptBlocks(plaintext, dst)
 
-	plaintext = common.PKCS7UnPadding(plaintext)
+	plaintext = internal.PKCS7UnPadding(plaintext)
 
 	size := decodeNetworkByteOrder(plaintext[16:20])
 	return plaintext[20 : 20+int(size)], nil

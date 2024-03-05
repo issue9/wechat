@@ -1,19 +1,15 @@
-// Copyright 2018 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package crypto
 
-import (
-	"github.com/issue9/rands"
-)
-
-var randstr = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+import "github.com/issue9/rands/v2"
 
 func nonce() []byte {
-	return rands.Bytes(16, 17, randstr)
+	return rands.Bytes(16, 17, rands.AlphaNumber())
 }
 
 func nonceString() string {
-	return rands.String(16, 17, randstr)
+	return rands.String(16, 17, rands.AlphaNumber())
 }

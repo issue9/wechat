@@ -1,6 +1,6 @@
-// Copyright 2018 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 package crypto
 
@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/issue9/assert/v3"
-	"github.com/issue9/rands"
+	"github.com/issue9/assert/v4"
+	"github.com/issue9/rands/v2"
 )
 
 type message struct {
@@ -26,7 +26,7 @@ type message struct {
 
 func TestCrypto_encrypt_decrypt(t *testing.T) {
 	a := assert.New(t, false)
-	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, randstr))
+	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, rands.AlphaNumber()))
 	a.NotError(err).NotNil(c)
 
 	msg := `<xml>
@@ -49,7 +49,7 @@ func TestCrypto_encrypt_decrypt(t *testing.T) {
 
 func TestCrypto_Encrypt_DecryptObject(t *testing.T) {
 	a := assert.New(t, false)
-	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, randstr))
+	c, err := New("wx123458de9ae3rdew", "token", rands.String(43, 44, rands.AlphaNumber()))
 	a.NotError(err).NotNil(c)
 
 	timesamp := strconv.FormatInt(time.Now().Unix(), 10)

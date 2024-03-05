@@ -1,23 +1,24 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 // Package unifiedorder 执行微信的下单操作。
 // 相对于 pay.Post，会便利很多，不需要每次都指定所有参数。
-//  p := pay.New(...)
-//  oconf := unifiedorder.New(p, pay.TradeTypeJSSDK, ...)
 //
-//  // 下单支付
-//  o := oconf.NewOrder()
-//  o.Body = "..."
-//  o.Goods(...)
-//  o.Pay(...)
+//	p := pay.New(...)
+//	oconf := unifiedorder.New(p, pay.TradeTypeJSSDK, ...)
 //
-//  // 另一笔支付操作
-//  o = oconf.NewOrder()
-//  o.Body = "..."
-//  o.Goods(...)
-//  o.Pay(...)
+//	// 下单支付
+//	o := oconf.NewOrder()
+//	o.Body = "..."
+//	o.Goods(...)
+//	o.Pay(...)
+//
+//	// 另一笔支付操作
+//	o = oconf.NewOrder()
+//	o.Body = "..."
+//	o.Goods(...)
+//	o.Pay(...)
 package unifiedorder
 
 import (
@@ -37,15 +38,16 @@ const limitPayNoCredit = "no_credit"
 // 支付时都重新声明是极大的浪费，所以建议先声明一个
 // 包含这些公用数据的 Order 实例，之后用 Order.NewOrder()
 // 生成一个新的 Order 实例，这个新的实例就继承这些数据。比如：
-//  conf := unifiedorder.New(...)
-//  conf.DeviceInfo = "WEB"
-//  conf.SignType = pay.SignTypeMD5
 //
-//  o1 := conf.NewOrder() // 继承了 conf.DeviceInfo 等数据
-//  o1.Body = "..."
-//  o1.Pay(...)
+//	conf := unifiedorder.New(...)
+//	conf.DeviceInfo = "WEB"
+//	conf.SignType = pay.SignTypeMD5
 //
-//  o2 := conf.NewOrder() // 依然从 conf 继承了 DeviceInfo 等数据
+//	o1 := conf.NewOrder() // 继承了 conf.DeviceInfo 等数据
+//	o1.Body = "..."
+//	o1.Pay(...)
+//
+//	o2 := conf.NewOrder() // 依然从 conf 继承了 DeviceInfo 等数据
 type Order struct {
 	pay            *pay.Pay
 	DeviceInfo     string        // 设备号
@@ -181,11 +183,12 @@ func (o *Order) params() (map[string]string, error) {
 // Pay 下单
 //
 // Example:
-//  uo := &unifiedorder.UnifiedOrder{...}
 //
-//  o = uo.NewOrder()
-//  o.Body = "body"
-//  o.Pay()
+//	uo := &unifiedorder.UnifiedOrder{...}
+//
+//	o = uo.NewOrder()
+//	o.Body = "body"
+//	o.Pay()
 func (o *Order) Pay() (*Return, error) {
 	params, err := o.params()
 	if err != nil {

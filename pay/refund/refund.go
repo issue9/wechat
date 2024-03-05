@@ -1,18 +1,18 @@
-// Copyright 2016 by caixw, All rights reserved.
-// Use of this source code is governed by a MIT
-// license that can be found in the LICENSE file.
+// SPDX-FileCopyrightText: 2016-2024 caixw
+//
+// SPDX-License-Identifier: MIT
 
 // Package refund 执行退款操作
 //
-//  p := pay.New(...)
-//  r := refund.Refund{
-//      Pay: p,
-//      OpUserID: "10001",
-//      SignType: pay.SignTypeMD5,
-//  }
+//	p := pay.New(...)
+//	r := refund.Refund{
+//	    Pay: p,
+//	    OpUserID: "10001",
+//	    SignType: pay.SignTypeMD5,
+//	}
 //
-//  // 执行退款操作
-//  r.OutTradeNO(...)
+//	// 执行退款操作
+//	r.OutTradeNO(...)
 package refund
 
 import (
