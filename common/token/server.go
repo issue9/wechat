@@ -6,7 +6,6 @@ package token
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"github.com/issue9/wechat/common"
@@ -14,10 +13,10 @@ import (
 
 // Server 表示中控服务器接口
 type Server interface {
-	// 获取中控服务器缓存的 access_token。
+	// 获取中控服务器缓存的 access_token
 	Token() *AccessToken
 
-	// 刷新中控服务器的 access_token。
+	// 刷新中控服务器的 access_token
 	//
 	// 中控服务器应该提供自动刷新机制。
 	// 此函数的存在，仅仅是为了在某些特定的情况下，手动刷 access_token 使用。
@@ -37,9 +36,9 @@ type DefaultServer struct {
 // NewDefaultServer 声明一个默认的 access_token 中控服务器
 //
 // 若将 errlog 指定为 nil，则会将错误信息输出到 stderr 中。
-func NewDefaultServer(conf *common.Config, errlog *log.Logger) *DefaultServer {
+func NewDefaultServer(conf *common.Config, errlog *log.Logger) Server {
 	if errlog == nil {
-		errlog = log.New(os.Stderr, "", log.Lshortfile|log.Ltime)
+		errlog = log.Default()
 	}
 
 	srv := &DefaultServer{

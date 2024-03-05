@@ -13,8 +13,8 @@ import (
 func TestNewConfig(t *testing.T) {
 	a := assert.New(t, false)
 
-	conf, err := NewConfig("appid", "appsecret", "")
-	a.NotError(err).Equal(conf.Host, "api.weixin.qq.com")
+	conf := NewConfig("appid", "appsecret", "")
+	a.Equal(conf.Host, "api.weixin.qq.com")
 }
 
 func TestConfig_URL(t *testing.T) {

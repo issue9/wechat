@@ -10,8 +10,9 @@ import (
 	"strconv"
 )
 
-// Result 描述了微信和 http 状态码，其中
-// [0,400) 区间的为非错误代码；
+// Result 描述了微信和 http 状态码
+//
+// 其中 [0,400) 区间的为非错误代码；
 // [400,600) 之间的为 HTTP 错误代码；
 // [600,40000) 之间的自定义的错误代码；
 // [40000,) 为微信的错误代码
@@ -42,7 +43,7 @@ func NewResult(code int) *Result {
 	}
 }
 
-// From 将一段字符串转换成 Result 实例。
+// From 将一段字符串转换成 [Result] 实例。
 func From(data []byte) *Result {
 	r := &Result{}
 	if err := json.Unmarshal(data, r); err != nil {
@@ -53,12 +54,8 @@ func From(data []byte) *Result {
 	return r
 }
 
-// IsOK 该结果是否正常返回。
-func (r *Result) IsOK() bool {
-	return r.Code >= 0 && r.Code < 400
-}
+// IsOK 该结果是否正常返回
+func (r *Result) IsOK() bool { return r.Code >= 0 && r.Code < 400 }
 
 // Error 实现 error 接口内容，在 IsOK 为 false 时，可以将 Result 当作一个 error 实例来使用。
-func (r *Result) Error() string {
-	return r.Message
-}
+func (r *Result) Error() string { return r.Message }

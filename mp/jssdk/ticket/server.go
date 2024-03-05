@@ -45,7 +45,7 @@ type DefaultServer struct {
 // NewDefaultServer 声明一个默认的 access_token 中控服务器
 //
 // 若将 errlog 指定为 nil，则会将错误信息输出到 stderr 中。
-func NewDefaultServer(tksrv token.Server, errlog *log.Logger) *DefaultServer {
+func NewDefaultServer(tksrv token.Server, errlog *log.Logger) Server {
 	if errlog == nil {
 		errlog = log.New(os.Stderr, "", log.Lshortfile|log.Ltime)
 	}

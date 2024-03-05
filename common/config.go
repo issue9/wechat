@@ -18,18 +18,16 @@ type Config struct {
 
 // NewConfig 声明一个 [Config] 实例
 //
-// Host 表示的微信的接口域名，留空，会选择通用的域名：
-// api.weixin.qq.com
+// Host 表示的微信的接口域名，留空，会选择通用的域名：api.weixin.qq.com 可参考[说明]。
 //
-// 详细说明在：
-// https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1465199793_BqlKA&token=&lang=zh_CN
-func NewConfig(appid, appsecret, host string) (*Config, error) {
+// [说明]: https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1465199793_BqlKA&token=&lang=zh_CN
+func NewConfig(appid, appsecret, host string) *Config {
 	if len(appid) == 0 {
-		return nil, NewResult(40002)
+		panic("参数 appid 不能为空")
 	}
 
 	if len(appsecret) == 0 {
-		return nil, NewResult(41004)
+		panic("参数 appsecret 不能为空")
 	}
 
 	if len(host) == 0 {
@@ -40,10 +38,12 @@ func NewConfig(appid, appsecret, host string) (*Config, error) {
 		AppID:     appid,
 		AppSecret: appsecret,
 		Host:      host,
-	}, nil
+	}
 }
 
-// URL 生成调用 api 的地址。根据 c.Host 不同，生成不同的地址。
+// URL 生成调用 api 的地址
+//
+// 根据 c.Host 不同，生成不同的地址。
 func (c *Config) URL(urlpath string, queries map[string]string) string {
 	us := make(url.Values, len(queries))
 	for k, v := range queries {

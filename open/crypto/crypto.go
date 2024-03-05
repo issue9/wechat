@@ -43,7 +43,7 @@ type Crypto struct {
 	plainlen int
 }
 
-// New 声明一个 Crypto 实例
+// New 声明一个 [Crypto] 实例
 //
 // encodingAesKey 不需要结尾的 = 字符
 func New(appid, token, encodingAesKey string) (*Crypto, error) {
