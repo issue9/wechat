@@ -7,7 +7,7 @@ package message
 import (
 	"encoding/xml"
 
-	"github.com/issue9/wechat/internal"
+	"github.com/issue9/wechat/internal/xxml"
 )
 
 // ReplySuccess 成功返回的内容
@@ -15,19 +15,19 @@ var ReplySuccess = []byte("success")
 
 // ReplyTransferCustomerService 转发消息
 type ReplyTransferCustomerService struct {
-	XMLName      xml.Name       `xml:"xml"`
-	ToUserName   internal.CData `xml:"ToUserName"`   // 开发者微信号
-	FromUserName internal.CData `xml:"FromUserName"` // 发送方帐号（一个 OpenID）
-	MsgType      internal.CData `xml:"MsgType"`      // 消息类型
-	CreateTime   int64          `xml:"CreateTime"`   // 消息创建时间 （整型）
+	XMLName      xml.Name   `xml:"xml"`
+	ToUserName   xxml.CData `xml:"ToUserName"`   // 开发者微信号
+	FromUserName xxml.CData `xml:"FromUserName"` // 发送方帐号（一个 OpenID）
+	MsgType      xxml.CData `xml:"MsgType"`      // 消息类型
+	CreateTime   int64      `xml:"CreateTime"`   // 消息创建时间 （整型）
 }
 
 // NewReplyTranferCustomerService 将所有的消息进行转发
 func NewReplyTranferCustomerService(m Messager) *ReplyTransferCustomerService {
 	return &ReplyTransferCustomerService{
-		ToUserName:   internal.CData{Text: m.From()},
-		FromUserName: internal.CData{Text: m.To()},
-		MsgType:      internal.CData{Text: TypeTransferCustomerService},
+		ToUserName:   xxml.CData{Text: m.From()},
+		FromUserName: xxml.CData{Text: m.To()},
+		MsgType:      xxml.CData{Text: TypeTransferCustomerService},
 		CreateTime:   m.Created(),
 	}
 }

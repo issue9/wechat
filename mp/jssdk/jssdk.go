@@ -8,13 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/issue9/wechat/mp/common/config"
-	"github.com/issue9/wechat/mp/common/result"
+	"github.com/issue9/wechat/common"
 )
 
 // 授权作用域，供 GetCodeURL 使用。
@@ -27,13 +25,13 @@ const (
 )
 
 // GetCodeURL 获取 code
-func GetCodeURL(conf *config.Config, redirectURI, scope, state string) string {
+func GetCodeURL(conf *common.Config, redirectURI, scope, state string) string {
 	redirectURI = url.QueryEscape(redirectURI)
 	return fmt.Sprintf(codeURL, conf.AppID, redirectURI, scope, state)
 }
 
 // GetAccessToken 根据 code 获取 access_token
-func GetAccessToken(conf *config.Config, code string) (*AccessToken, error) {
+func GetAccessToken(conf *common.Config, code string) (*AccessToken, error) {
 	queries := map[string]string{
 		"appid":      conf.AppID,
 		"secret":     conf.AppSecret,
@@ -52,7 +50,7 @@ func GetAccessToken(conf *config.Config, code string) (*AccessToken, error) {
 }
 
 // RefreshAccessToken 刷新 access_token
-func RefreshAccessToken(conf *config.Config, token *AccessToken) (*AccessToken, error) {
+func RefreshAccessToken(conf *common.Config, token *AccessToken) (*AccessToken, error) {
 	queries := map[string]string{
 		"appid":         conf.AppID,
 		"refresh_token": token.RefreshToken,
@@ -72,7 +70,7 @@ func RefreshAccessToken(conf *config.Config, token *AccessToken) (*AccessToken, 
 // GetUserInfo 获取用户基本信息
 //
 // 若不指定 lang 则使用 zh_CN 作为其默认值。
-func GetUserInfo(conf *config.Config, token *AccessToken, lang string) (*UserInfo, error) {
+func GetUserInfo(conf *common.Config, token *AccessToken, lang string) (*UserInfo, error) {
 	if len(lang) == 0 {
 		lang = "zh_CN"
 	}
@@ -89,7 +87,7 @@ func GetUserInfo(conf *config.Config, token *AccessToken, lang string) (*UserInf
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +100,7 @@ func GetUserInfo(conf *config.Config, token *AccessToken, lang string) (*UserInf
 		return info, nil
 	}
 
-	rslt := &result.Result{}
+	rslt := &common.Result{}
 	if err = json.Unmarshal(data, rslt); err != nil {
 		return nil, err
 	}
@@ -110,7 +108,7 @@ func GetUserInfo(conf *config.Config, token *AccessToken, lang string) (*UserInf
 }
 
 // AuthAccessToken 验证 access_token 是否有效
-func AuthAccessToken(conf *config.Config, token *AccessToken) (bool, error) {
+func AuthAccessToken(conf *common.Config, token *AccessToken) (bool, error) {
 	queries := map[string]string{
 		"openid":       token.OpenID,
 		"access_token": token.AccessToken,
@@ -123,18 +121,18 @@ func AuthAccessToken(conf *config.Config, token *AccessToken) (bool, error) {
 	}
 	defer resp.Body.Close()
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return false, err
 	}
 
-	rslt := result.From(data)
+	rslt := common.From(data)
 	return rslt.Code == 0, rslt
 }
 
 // 分析 r 中的数据到 AccessToken 或是 result.Result 对象中。
 func parseAccessToken(r io.Reader) (*AccessToken, error) {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +146,7 @@ func parseAccessToken(r io.Reader) (*AccessToken, error) {
 		return token, nil
 	}
 
-	rslt := &result.Result{}
+	rslt := &common.Result{}
 	if err := json.Unmarshal(data, rslt); err != nil {
 		return nil, err
 	}

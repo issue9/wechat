@@ -7,12 +7,10 @@ package token
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"time"
 
-	"github.com/issue9/wechat/mp/common/config"
-	"github.com/issue9/wechat/mp/common/result"
+	"github.com/issue9/wechat/common"
 )
 
 // AccessToken 用于描述从 https://api.weixin.qq.com/cgi-bin/token 正常返回的数据结构。
@@ -30,7 +28,7 @@ func (at *AccessToken) IsExpired() bool {
 // Refresh 刷新 access_token
 //
 // 用户最好自己实现一个处理 access_token 的中控服务器来集中处理 access_token 的获取与更新。
-func Refresh(conf *config.Config) (*AccessToken, error) {
+func Refresh(conf *common.Config) (*AccessToken, error) {
 	queries := map[string]string{
 		"grant_type": "client_credential",
 		"appid":      conf.AppID,
@@ -43,7 +41,7 @@ func Refresh(conf *config.Config) (*AccessToken, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 { // 400 以上的状态码，直接输出错误信息
-		return nil, &result.Result{
+		return nil, &common.Result{
 			Code:    resp.StatusCode,
 			Message: resp.Status,
 		}
@@ -54,7 +52,7 @@ func Refresh(conf *config.Config) (*AccessToken, error) {
 
 // 将 r 中的数据分析到 AccessToken 中
 func parseAccessToken(r io.Reader) (*AccessToken, error) {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +67,7 @@ func parseAccessToken(r io.Reader) (*AccessToken, error) {
 		return at, nil
 	}
 
-	rslt := &result.Result{}
+	rslt := &common.Result{}
 	if err := json.Unmarshal(data, rslt); err != nil {
 		return nil, err
 	}

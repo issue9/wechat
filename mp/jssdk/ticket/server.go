@@ -16,7 +16,7 @@ import (
 
 	"github.com/issue9/errwrap"
 
-	"github.com/issue9/wechat/mp/common/token"
+	"github.com/issue9/wechat/common/token"
 	"github.com/issue9/wechat/pay"
 )
 

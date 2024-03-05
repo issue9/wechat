@@ -6,7 +6,7 @@ package open
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -53,7 +53,7 @@ type VerifyTicket struct {
 func ParseVerifyTicket(c *crypto.Crypto, w http.ResponseWriter, r *http.Request) (*VerifyTicket, error) {
 	w.Write([]byte("success")) // 先返回内容
 
-	data, err := ioutil.ReadAll(r.Body)
+	data, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
 	}

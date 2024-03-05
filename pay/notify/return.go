@@ -11,8 +11,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/issue9/wechat/internal/xxml"
 	"github.com/issue9/wechat/pay"
-	"github.com/issue9/wechat/pay/internal"
 )
 
 // Return 微信返回的信息结构
@@ -50,7 +50,7 @@ func (ret *Return) Subscribed() bool {
 
 // Read 从 r 读取内容，并尝试转换成 Return 实例
 func Read(p *pay.Pay, r io.Reader) (*Return, error) {
-	params, err := internal.MapFromXMLReader(r)
+	params, err := xxml.MapFromXMLReader(r)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func Read(p *pay.Pay, r io.Reader) (*Return, error) {
 	}
 
 	ret := &Return{}
-	err = internal.Map2XMLObj(params, ret)
+	err = xxml.Map2XMLObj(params, ret)
 	if err != nil {
 		return nil, err
 	}

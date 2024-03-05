@@ -7,12 +7,11 @@ package auth
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
-	"github.com/issue9/wechat/mp/common/config"
-	"github.com/issue9/wechat/mp/common/result"
+	"github.com/issue9/wechat/common"
 )
 
 // TODO 采用 mp/common/config 包的配置
@@ -23,7 +22,7 @@ const (
 
 // Response 返回的数据
 type Response struct {
-	result.Result
+	common.Result
 	Openid     string `json:"openid"`
 	SessionKey string `json:"session_key"`
 	UnionID    string `json:"unionid,omitempty"` // 某些情况下存在
@@ -32,7 +31,7 @@ type Response struct {
 }
 
 // Authorization 执行登录验证，并获取相应的数据
-func Authorization(conf *config.Config, jscode string) (*Response, error) {
+func Authorization(conf *common.Config, jscode string) (*Response, error) {
 	queries := map[string]string{
 		"grant_type": grantType,
 		"appid":      conf.AppID,
@@ -44,7 +43,7 @@ func Authorization(conf *config.Config, jscode string) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	bs, err := ioutil.ReadAll(resp.Body)
+	bs, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 
 	data := &Response{}

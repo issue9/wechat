@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/issue9/wechat/mp/common/config"
+	"github.com/issue9/wechat/common"
 )
 
 // ErrWeappUnauthorization 表示微信未登录，或是登录已经过期
@@ -17,7 +17,7 @@ var ErrWeappUnauthorization = errors.New("微信未登录")
 
 // Server 小程序状态管理服务
 type Server struct {
-	conf *config.Config
+	conf *common.Config
 
 	// 保存从服务端返回的内容，键名为 openid，键值为整个返回值
 	tokens       map[string]*Response
@@ -29,7 +29,7 @@ type Server struct {
 //
 // cap 表示初始容量。
 // gctick 表示 GC 的启动频率，根据业务量自定义一个合理的值。
-func NewServer(conf *config.Config, cap int, gctick, expired time.Duration) *Server {
+func NewServer(conf *common.Config, cap int, gctick, expired time.Duration) *Server {
 	srv := &Server{
 		conf:    conf,
 		tokens:  make(map[string]*Response, cap),

@@ -2,7 +2,8 @@
 //
 // SPDX-License-Identifier: MIT
 
-// Package unifiedorder 执行微信的下单操作。
+// Package unifiedorder 执行微信的下单操作
+//
 // 相对于 pay.Post，会便利很多，不需要每次都指定所有参数。
 //
 //	p := pay.New(...)

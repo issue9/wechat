@@ -6,16 +6,16 @@ package template
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
-	"github.com/issue9/wechat/mp/common/result"
-	"github.com/issue9/wechat/mp/common/token"
+	"github.com/issue9/wechat/common"
+	"github.com/issue9/wechat/common/token"
 )
 
 // List 模板列表
 type List struct {
-	result.Result
+	common.Result
 	List []*Template `json:"template_list"`
 }
 
@@ -38,7 +38,7 @@ func Templates(srv token.Server) (*List, error) {
 	}
 	defer resp.Body.Close()
 
-	respData, err := ioutil.ReadAll(resp.Body)
+	respData, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

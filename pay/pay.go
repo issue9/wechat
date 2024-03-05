@@ -16,7 +16,8 @@ import (
 	"os"
 
 	"github.com/issue9/errwrap"
-	"github.com/issue9/wechat/pay/internal"
+
+	"github.com/issue9/wechat/internal/xxml"
 )
 
 // 预定义的错误类型
@@ -100,7 +101,7 @@ func (p *Pay) Post(url string, params map[string]string) (map[string]string, err
 	}
 	defer resp.Body.Close()
 
-	return internal.MapFromXMLReader(resp.Body)
+	return xxml.MapFromXMLReader(resp.Body)
 }
 
 // UnifiedOrder 执行统一下单

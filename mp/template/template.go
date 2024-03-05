@@ -8,10 +8,10 @@ package template
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
-	"github.com/issue9/wechat/mp/common/token"
+	"github.com/issue9/wechat/common/token"
 )
 
 // Send 发送模板信息
@@ -42,7 +42,7 @@ func Send(srv token.Server, to, id, url string, data Data) error {
 	}
 	defer resp.Body.Close()
 
-	respData, err := ioutil.ReadAll(resp.Body)
+	respData, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

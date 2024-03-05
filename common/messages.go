@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-package result
+package common
 
 // 以下数据来自 http://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1433747234&token=&lang=zh_CN
 var messages = map[int]string{

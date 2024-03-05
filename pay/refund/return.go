@@ -7,8 +7,8 @@ package refund
 import (
 	"fmt"
 
+	"github.com/issue9/wechat/internal/xxml"
 	"github.com/issue9/wechat/pay"
-	"github.com/issue9/wechat/pay/internal"
 )
 
 // Return 退款的申请的返回值
@@ -35,7 +35,7 @@ type Return struct {
 
 func newReturn(params map[string]string) (*Return, error) {
 	ret := &Return{}
-	if err := internal.Map2XMLObj(params, ret); err != nil {
+	if err := xxml.Map2XMLObj(params, ret); err != nil {
 		return nil, err
 	}
 

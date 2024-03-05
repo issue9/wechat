@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/issue9/wechat/mp/common/config"
+	"github.com/issue9/wechat/common"
 )
 
 // Server 表示中控服务器接口
@@ -24,12 +24,12 @@ type Server interface {
 	Refresh() (*AccessToken, error)
 
 	// 获取相关的配置项
-	Config() *config.Config
+	Config() *common.Config
 }
 
 // DefaultServer 默认的 access_token 中控服务器
 type DefaultServer struct {
-	conf   *config.Config
+	conf   *common.Config
 	errlog *log.Logger
 	token  *AccessToken
 }
@@ -37,7 +37,7 @@ type DefaultServer struct {
 // NewDefaultServer 声明一个默认的 access_token 中控服务器
 //
 // 若将 errlog 指定为 nil，则会将错误信息输出到 stderr 中。
-func NewDefaultServer(conf *config.Config, errlog *log.Logger) *DefaultServer {
+func NewDefaultServer(conf *common.Config, errlog *log.Logger) *DefaultServer {
 	if errlog == nil {
 		errlog = log.New(os.Stderr, "", log.Lshortfile|log.Ltime)
 	}
@@ -68,7 +68,7 @@ func (s *DefaultServer) Refresh() (*AccessToken, error) {
 }
 
 // Config 获取相关的配置对象
-func (s *DefaultServer) Config() *config.Config {
+func (s *DefaultServer) Config() *common.Config {
 	return s.conf
 }
 

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-package result
+package common
 
 import (
 	"net/http"
@@ -14,19 +14,19 @@ import (
 
 var _ error = &Result{}
 
-func TestNew(t *testing.T) {
+func TestNewResult(t *testing.T) {
 	a := assert.New(t, false)
 
 	// HTTP 错误代码
-	r := New(http.StatusBadRequest)
+	r := NewResult(http.StatusBadRequest)
 	a.Equal(r.Message, http.StatusText(http.StatusBadRequest))
 
 	// 微信错误代码
-	r = New(40002)
+	r = NewResult(40002)
 	a.Equal(r.Message, messages[40002])
 
 	// 不存在
-	r = New(-100)
+	r = NewResult(-100)
 	a.Equal(r.Code, 601).Equal(r.Message, messages[601]+strconv.Itoa(-100))
 }
 
@@ -46,15 +46,15 @@ func TestFrom(t *testing.T) {
 func TestResult_IsOK(t *testing.T) {
 	a := assert.New(t, false)
 
-	r := New(0)
+	r := NewResult(0)
 	a.True(r.IsOK())
 
-	r = New(http.StatusOK)
+	r = NewResult(http.StatusOK)
 	a.True(r.IsOK())
 
-	r = New(-1)
+	r = NewResult(-1)
 	a.False(r.IsOK())
 
-	r = New(http.StatusInternalServerError)
+	r = NewResult(http.StatusInternalServerError)
 	a.False(r.IsOK())
 }

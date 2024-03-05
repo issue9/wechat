@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-package config
+package common
 
 import (
 	"testing"
@@ -10,10 +10,10 @@ import (
 	"github.com/issue9/assert/v4"
 )
 
-func TestNew(t *testing.T) {
+func TestNewConfig(t *testing.T) {
 	a := assert.New(t, false)
 
-	conf, err := New("appid", "appsecret", "")
+	conf, err := NewConfig("appid", "appsecret", "")
 	a.NotError(err).Equal(conf.Host, "api.weixin.qq.com")
 }
 

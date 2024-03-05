@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -40,7 +40,7 @@ func GetPreAuthCode(appid, accessToken string) (*PreAuthCode, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func GetComponentAccessToken(appid, appsecret, verityTicket string) (token strin
 		return "", 0, err
 	}
 
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return "", 0, err
 	}
@@ -163,7 +163,7 @@ func GetQueryAuth(appid, authorizationCode, componentAccessToken string) (*Query
 		return nil, err
 	}
 
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func GetAuthorizerToken(appid, authorizerAppid, authorizerRefreshToken, componen
 		return nil, err
 	}
 
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +252,7 @@ func GetAuthorizerInfo(appid, authorizerAppid, componentAccessToken string) (*Au
 		return nil, err
 	}
 
-	data, err = ioutil.ReadAll(resp.Body)
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

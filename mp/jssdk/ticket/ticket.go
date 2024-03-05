@@ -6,10 +6,10 @@ package ticket
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 
-	"github.com/issue9/wechat/mp/common/token"
+	"github.com/issue9/wechat/common/token"
 )
 
 // Ticket 表示 jsjapi 的 ticket 类型
@@ -39,7 +39,7 @@ func Refresh(srv token.Server) (*Ticket, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

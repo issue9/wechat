@@ -8,7 +8,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -86,7 +85,7 @@ func sign(token, timestamp, nonce string) string {
 }
 
 func getObj(r io.Reader) (Messager, error) {
-	data, err := ioutil.ReadAll(r)
+	data, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}

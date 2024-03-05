@@ -4,7 +4,7 @@
 
 package template
 
-import "github.com/issue9/wechat/mp/common/result"
+import "github.com/issue9/wechat/common"
 
 type limit struct {
 	Offset int `json:"offset"`
@@ -13,7 +13,7 @@ type limit struct {
 
 // Result 表示消息推送之后的数据
 type Result struct {
-	result.Result
+	common.Result
 	MsgID int64 `json:"msgid"`
 }
 

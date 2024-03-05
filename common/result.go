@@ -2,8 +2,7 @@
 //
 // SPDX-License-Identifier: MIT
 
-// result 包含了对微信接口所有错误返回信息的定义
-package result
+package common
 
 import (
 	"encoding/json"
@@ -22,8 +21,8 @@ type Result struct {
 	Message string `json:"errmsg,omitempty"`
 }
 
-// New 声明一个 Result 实例
-func New(code int) *Result {
+// NewResult 声明一个 [Result] 实例
+func NewResult(code int) *Result {
 	var message string
 	if code >= 200 && code < 600 { // HTTP 信息
 		message = http.StatusText(code)
